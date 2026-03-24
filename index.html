@@ -2,23 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v2.0 - Royal Edition</title>
+    <title>Core Prize Manager v3.0 - Royal Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
         
-        /* DESIGN APROVADO: Fundo escuro e borda dourada */
         .admin-panel { background: #1d3557; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-bottom: 5px solid var(--gold); }
         .staff-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; display: none; }
-        .grid-inputs { 
-    display: grid; 
-    grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr 0.8fr auto; 
-    gap: 12px; 
-    margin-bottom: 15px; 
-    align-items: end; 
-}
+        .grid-inputs { display: grid; grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr 0.8fr auto; gap: 12px; margin-bottom: 15px; align-items: end; }
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 0.7rem; font-weight: bold; margin-bottom: 4px; color: #ccc; text-transform: uppercase; }
         input, select { padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.9rem; }
@@ -34,7 +27,6 @@
         .btn-print { background: var(--dark); color: white; }
         .btn-close-event { background: #8e44ad; color: white; width: 100%; margin-top: 10px; border-bottom: 3px solid #6c3483; }
 
-        /* Estilo da Página de Impressão */
         .payout-page { background: white; width: 210mm; min-height: 297mm; padding: 15mm; margin: 20px auto; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.1); display: none; }
         .header-payout { text-align: center; border-bottom: 3px solid var(--dark); padding-bottom: 10px; margin-bottom: 20px; }
         .event-name { font-size: 1.8rem; color: var(--dark); text-transform: uppercase; margin: 5px 0; }
@@ -44,9 +36,8 @@
         .payout-table td { padding: 12px; border-bottom: 1px dotted #ccc; text-align: center; font-size: 1.1rem; }
         .rank-col { text-align: left !important; padding-left: 30px !important; font-weight: bold; color: var(--dark); }
 
-        /* Portal de Entrada */
         #login-area { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
-        .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 350px; text-align: center; }
+        .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 450px; text-align: center; }
 
         @media print { .no-print { display: none !important; } .payout-page { display: block !important; border: none; width: 100%; box-shadow: none; margin: 0; } }
     </style>
@@ -54,7 +45,7 @@
 <body>
 
     <div id="login-area" class="no-print">
-        <div class="login-card">
+        <div class="login-card" style="width: 350px;">
             <h2 style="color: var(--dark); margin-bottom: 5px;">CORE PRIZE</h2>
             <p style="font-size: 0.8rem; color: #666; margin-bottom: 25px; font-weight: bold;">SIDES DATA MANAGER</p>
             <div class="input-group">
@@ -65,6 +56,25 @@
         </div>
     </div>
 
+    <div id="emailSetupArea" class="no-print" style="display: none; min-height: 80vh; align-items: center; justify-content: center;">
+        <div class="login-card">
+            <h3 style="color: var(--dark); margin-bottom: 10px;">📧 COMMUNICATION SETUP</h3>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 25px;">Please register the emails to receive the <br><strong>Final Consolidated Report</strong> on Sunday.</p>
+            
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label style="color: #666; text-align: left;">Tournament Organizer (TO) Email</label>
+                <input type="email" id="toEmail" placeholder="organizer@email.com" style="width: 100%; box-sizing: border-box; padding: 10px;">
+            </div>
+            
+            <div class="input-group" style="margin-bottom: 25px;">
+                <label style="color: #666; text-align: left;">Lead Staff Email</label>
+                <input type="email" id="leadEmail" placeholder="lead@email.com" style="width: 100%; box-sizing: border-box; padding: 10px;">
+            </div>
+
+            <button onclick="saveEmailsAndGo()" style="background: var(--green); color: white; width: 100%;">SAVE & START SETUP</button>
+        </div>
+    </div>
+
     <div id="setupArea" class="admin-panel no-print" style="display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h3 style="margin-top:0">🛡️ SIDES CORE MANAGER DATA</h3>
@@ -72,31 +82,22 @@
         </div>
         
         <div class="grid-inputs">
-    <div class="input-group">
-        <label>Event Name</label>
-        <input type="text" id="masterEvent" autocomplete="off" placeholder="e.g. CAMPINAS REGIONAL'26">
-    </div>
+            <div class="input-group">
+                <label>Event Name</label>
+                <input type="text" id="masterEvent" autocomplete="off" placeholder="e.g. CAMPINAS REGIONAL'26">
+            </div>
             <div class="input-group"><label>Logo Type</label><select id="masterLogo"><option value="REGIONAL">REGIONAL</option><option value="IC">INTERNATIONAL (IC)</option></select></div>
-            <div class="input-group"><label>Participation %</label><input type="number" id="masterTax" placeholder="e.g. 20"></div>
-            <div class="input-group"><label>Spread Factor</label><select id="masterFactor"><option value="2.0">2.0 (Aggressive)</option><option value="1.75">1.75 (Balanced)</option><option value="1.5">1.5 (Flat)</option></select></div>
+            <div class="input-group"><label>Participation %</label><input type="number" id="masterTax" value="20"></div>
+            <div class="input-group"><label>Spread Factor</label><select id="masterFactor"><option value="2.0">2.0 (Aggressive)</option><option value="1.75" selected>1.75 (Balanced)</option><option value="1.5">1.5 (Flat)</option></select></div>
         </div>
 
         <h4 style="color: var(--gold); margin: 20px 0 10px; text-transform: uppercase;">📅 Tournament Catalog</h4>
         <div class="grid-inputs">
-            <div class="input-group"><label>Name</label><input type="text" id="tName" placeholder="TCG BUILD & BATTLE"></div><div style="display: flex; gap: 5px;">
-    <div class="input-group" style="flex: 1.5;">
-        <label>Day</label>
-        <select id="tDay">
-            <option value="Day 1">Day 1</option>
-            <option value="Day 2">Day 2</option>
-            <option value="Day 3">Day 3</option>
-        </select>
-    </div>
-    <div class="input-group" style="flex: 1;">
-        <label>Hour</label>
-        <input type="text" id="tHour" placeholder="2:00 PM">
-    </div>
-</div>
+            <div class="input-group"><label>Name</label><input type="text" id="tName" placeholder="TCG BUILD & BATTLE"></div>
+            <div style="display: flex; gap: 5px;">
+                <div class="input-group" style="flex: 1.5;"><label>Day</label><select id="tDay"><option value="Day 1">Day 1</option><option value="Day 2">Day 2</option><option value="Day 3">Day 3</option></select></div>
+                <div class="input-group" style="flex: 1;"><label>Hour</label><input type="text" id="tHour" placeholder="2:00 PM"></div>
+            </div>
             <div class="input-group"><label>Entry Fee $</label><input type="number" id="tFee"></div>
             <div class="input-group"><label>Material Cost $</label><input type="number" id="tCost"></div>
             <button class="btn-add" onclick="addTournament()">+ ADD</button>
@@ -119,7 +120,10 @@
             <div class="input-group"><label>Fee</label><input type="number" id="staffFee" disabled></div>
             <div class="input-group"><label>Players</label><input type="number" id="staffPlayers" value="0"></div>
         </div>
-        <div style="display: flex; gap: 10px;"><button class="btn-update" style="flex: 1;" onclick="generatePayout()">🔄 UPDATE VIEW</button><button class="btn-print" style="flex: 1;" onclick="window.print()">🖨️ PRINT PDF</button></div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-update" style="flex: 1;" onclick="generatePayout()">🔄 UPDATE VIEW</button>
+            <button class="btn-print" style="flex: 1;" onclick="window.print()">🖨️ PRINT PDF</button>
+        </div>
     </div>
 
     <div id="printArea" class="payout-page">
@@ -128,11 +132,13 @@
             <div id="outTourneyName" style="font-size: 1.4rem; color: var(--primary-red); font-weight: bold; margin-bottom: 5px;"></div>
             <div id="outDetails" style="font-size: 1rem; color: #444; border-top: 1px solid #eee; padding-top: 8px;"></div>
         </div>
-        <table class="payout-table"><thead><tr><th class="rank-col">Rank / Position</th><th>Prize Tickets</th></tr></thead><tbody id="payoutBody"></tbody></table>
+        <table class="payout-table">
+            <thead><tr><th class="rank-col">Rank / Position</th><th>Prize Tickets</th></tr></thead>
+            <tbody id="payoutBody"></tbody>
+        </table>
     </div>
 
     <script>
-        // CONFIG SUPABASE
         const supabaseUrl = 'https://hocpoastnlcwgedvcyqs.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvY3BvYXN0bmxjd2dlZHZjeXFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODU0MTYsImV4cCI6MjA4OTg2MTQxNn0.1MvvcFsnGW4e0Bj7mzoUKs_3bGM-eHDJTOqsvgKe-pI';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
@@ -140,25 +146,19 @@
         let tournamentCatalog = [];
         let currentEventID = '';
 
-     async function checkAccess() {
+        async function checkAccess() {
             const idInput = document.getElementById('event-id-input');
             const id = idInput.value.trim().toUpperCase();
             if(!id) return alert("Enter ID!");
-
             idInput.value = '';
 
-            // Fluxo para o Administrador (LEAD)
             if (id.endsWith('_LEAD')) {
                 currentEventID = id;
                 document.getElementById('login-area').style.display = 'none';
-                document.getElementById('setupArea').style.display = 'block';
-                // Define o nome do evento inicial como o ID (sem o _LEAD)
-                document.getElementById('masterEvent').value = id.replace('_LEAD', '');
-                loadTournaments();
-                return; 
+                document.getElementById('emailSetupArea').style.display = 'flex';
+                return;
             }
 
-            // Fluxo para o STAFF (Só entra se o Lead já tiver criado algo)
             const searchID = id + '_LEAD';
             const { data, error } = await _supabase.from('tournament_catalog').select('*').eq('event_id', searchID);
 
@@ -171,59 +171,24 @@
                 alert("ACCESS DENIED: This event hasn't been set up by a Lead yet.");
             }
         }
-        // Lógica de manipulação da tabela (Local por enquanto)
-        function addTournament() {
-            const name = document.getElementById('tName').value.trim();
-            const day = document.getElementById('tDay').value; 
-            const hour = document.getElementById('tHour').value.trim();
-            const fee = parseFloat(document.getElementById('tFee').value);
-            const cost = parseFloat(document.getElementById('tCost').value) || 0;
-            
-            if(!name || !hour || isNaN(fee)) return alert("Please fill Name, Hour and Fee!");
 
-            // Envia para o Supabase
-            saveToDatabase(name, day, hour, fee, cost);
+        function saveEmailsAndGo() {
+            const to = document.getElementById('toEmail').value.trim();
+            const lead = document.getElementById('leadEmail').value.trim();
+            if(!to || !lead) return alert("Please fill both emails to proceed!");
+
+            document.getElementById('emailSetupArea').style.display = 'none';
+            document.getElementById('setupArea').style.display = 'block';
+            document.getElementById('masterEvent').value = currentEventID.replace('_LEAD', '');
+            loadTournaments();
         }
 
-        function renderCatalog() {const tbody = document.querySelector('#catalogTable tbody');
-    const select = document.getElementById('staffSelectTourney');
-    
-    tbody.innerHTML = ""; 
-    select.innerHTML = "";
-
-    tournamentCatalog.forEach((t, i) => {
-        // Agora o código busca 'day' e 'hour' separadamente, resolvendo o undefined
-        tbody.innerHTML += `
-        <tr>
-            <td>${t.name}</td>
-            <td>${t.day}</td>
-            <td>${t.hour}</td>
-            <td>$${t.fee}</td>
-            <td>$${t.cost}</td>
-            <td><button onclick="removeT(${i})">❌</button></td>
-        </tr>`;
-
-        // O menu suspenso da Staff também fica organizado
-        select.innerHTML += `<option value="${i}">${t.day} | ${t.hour} - ${t.name}</option>`;
-    });
-        }
-async function saveToDatabase(name, day, hour, fee, cost) {
-            const { data, error } = await _supabase
-                .from('tournament_catalog')
-                .insert([{ 
-                    event_id: currentEventID, 
-                    name: name,
-                    t_date: day,
-                    t_hour: hour,
-                    t_fee: fee,
-                    t_cost: cost
-                }]);
-
-            if (error) {
-                console.error("Error saving:", error);
-                alert("Error saving to database!");
-            } else {
-                // Se salvou no banco, limpa os campos e RECARREGA a lista do banco
+        async function saveToDatabase(name, day, hour, fee, cost) {
+            const { data, error } = await _supabase.from('tournament_catalog').insert([{ 
+                event_id: currentEventID, name: name, t_date: day, t_hour: hour, t_fee: fee, t_cost: cost 
+            }]);
+            if (error) alert("Error saving to database!");
+            else {
                 document.getElementById('tName').value = "";
                 document.getElementById('tHour').value = "";
                 document.getElementById('tFee').value = "";
@@ -233,41 +198,44 @@ async function saveToDatabase(name, day, hour, fee, cost) {
         }
 
         async function loadTournaments() {
-            const { data, error } = await _supabase
-                .from('tournament_catalog')
-                .select('*')
-                .eq('event_id', currentEventID);
-
+            const { data, error } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
             if (data) {
-                // Atualiza nossa lista local com o que veio do banco
                 tournamentCatalog = data.map(item => ({
-                    id: item.id, // Guardamos o ID real do banco para deletar depois
-                    name: item.name,
-                    day: item.t_date,
-                    hour: item.t_hour,
-                    fee: item.t_fee,
-                    cost: item.t_cost
+                    id: item.id, name: item.name, day: item.t_date, hour: item.t_hour, fee: item.t_fee, cost: item.t_cost
                 }));
                 renderCatalog();
             }
         }
-      async function removeT(index) {
-            const tourney = tournamentCatalog[index];
-            if (confirm(`Are you sure you want to delete "${tourney.name}"?`)) {
-                const { error } = await _supabase
-                    .from('tournament_catalog')
-                    .delete()
-                    .eq('id', tourney.id); 
 
-                if (error) {
-                    console.error("Error deleting:", error);
-                    alert("Error deleting from database!");
-                } else {
-                    // Se deletou no banco, recarrega a lista para sumir da tela
-                    loadTournaments(); 
-                }
+        function renderCatalog() {
+            const tbody = document.querySelector('#catalogTable tbody');
+            const select = document.getElementById('staffSelectTourney');
+            tbody.innerHTML = ""; select.innerHTML = "";
+            tournamentCatalog.forEach((t, i) => {
+                tbody.innerHTML += `<tr><td>${t.name}</td><td>${t.day}</td><td>${t.hour}</td><td>$${t.fee}</td><td>$${t.cost}</td><td><button onclick="removeT(${i})">❌</button></td></tr>`;
+                select.innerHTML += `<option value="${i}">${t.day} | ${t.hour} - ${t.name}</option>`;
+            });
+        }
+
+        function addTournament() {
+            const name = document.getElementById('tName').value.trim();
+            const day = document.getElementById('tDay').value;
+            const hour = document.getElementById('tHour').value.trim();
+            const fee = parseFloat(document.getElementById('tFee').value);
+            const cost = parseFloat(document.getElementById('tCost').value) || 0;
+            if(!name || !hour || isNaN(fee)) return alert("Fill Name, Hour and Fee!");
+            saveToDatabase(name, day, hour, fee, cost);
+        }
+
+        async function removeT(index) {
+            const tourney = tournamentCatalog[index];
+            if (confirm(`Delete "${tourney.name}"?`)) {
+                const { error } = await _supabase.from('tournament_catalog').delete().eq('id', tourney.id);
+                if (error) alert("Error deleting!");
+                else loadTournaments();
             }
         }
+
         function lockSetup() {
             document.getElementById('setupArea').style.display = 'none';
             document.getElementById('staffArea').style.display = 'block';
@@ -287,12 +255,10 @@ async function saveToDatabase(name, day, hour, fee, cost) {
         }
 
         function resetSystem() {
-            if(confirm("DELETE EVERYTHING?") && prompt("Type DELETE:") === "DELETE") {
-                location.reload();
-            }
+            if(confirm("DELETE EVERYTHING?") && prompt("Type DELETE:") === "DELETE") location.reload();
         }
 
-        // A lógica de cálculo de prêmios (generatePayout) deve ser colada aqui conforme a v3.8 original
+        // A lógica matemática do Payout entrará aqui no próximo passo!
     </script>
 </body>
 </html>
