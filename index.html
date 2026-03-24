@@ -39,13 +39,13 @@
         </div>
     </div>
 
-  <div id="control-panel-page" class="hidden max-w-7xl mx-auto space-y-4">
+    <div id="control-panel-page" class="hidden max-w-7xl mx-auto space-y-4">
         
         <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-100">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 class="text-2xl font-black text-slate-900 tracking-tighter">SIDES CORE MANAGER DATA</h1>
-                    <p id="display-event-id" class="text-blue-600 font-bold uppercase text-xs tracking-widest">EVENT ID</p>
+                    <h1 class="text-2xl font-black text-slate-900 tracking-tighter uppercase">SIDES CORE MANAGER DATA</h1>
+                    <p id="display-event-id" class="text-blue-600 font-bold uppercase text-xs tracking-widest">EVENT NAME</p>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
@@ -72,18 +72,18 @@
                     </div>
                 </div>
 
-                <button onclick="location.reload()" class="text-slate-400 hover:text-red-500 font-black text-[10px] uppercase transition-all">Exit System</button>
+                <button onclick="location.reload()" class="text-slate-400 hover:text-red-500 font-black text-[10px] uppercase transition-all tracking-widest">Exit System</button>
             </div>
         </div>
 
         <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-100">
             <div class="grid grid-cols-1 md:grid-cols-[2fr,1fr,1fr,1fr,1fr,auto] gap-4 items-end">
                 <div class="flex flex-col">
-                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1">Tournament Name</label>
-                    <input type="text" id="t-name" placeholder="EX: TURBO R$ 100" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-orange-500 font-bold uppercase text-xs">
+                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-tight">Tournament Name</label>
+                    <input type="text" id="t-name" placeholder="TCG BUILD & BATTLE" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-orange-500 font-bold uppercase text-xs">
                 </div>
                 <div class="flex flex-col">
-                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1">Date</label>
+                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-tight">Date</label>
                     <select id="t-date" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none font-bold text-xs text-slate-700">
                         <option value="DAY 1">DAY 1</option>
                         <option value="DAY 2">DAY 2</option>
@@ -91,15 +91,15 @@
                     </select>
                 </div>
                 <div class="flex flex-col">
-                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1">Hour</label>
-                    <input type="time" id="t-hour" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none font-bold text-xs">
+                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-tight">Hour</label>
+                    <input type="text" id="t-hour" placeholder="e.g. 2:00 PM" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none font-bold text-xs">
                 </div>
                 <div class="flex flex-col">
-                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1">Entry Fee $</label>
+                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-tight">Entry Fee $</label>
                     <input type="number" id="t-fee" placeholder="0" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none font-bold text-xs">
                 </div>
                 <div class="flex flex-col">
-                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1">Material Cost $</label>
+                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-tight">Material Cost $</label>
                     <input type="number" id="t-cost" placeholder="0" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none font-bold text-xs">
                 </div>
                 <button onclick="addTournament()" class="bg-orange-500 hover:bg-orange-600 text-white font-black px-6 py-3.5 rounded-lg uppercase text-xs transition-all active:scale-95 shadow-lg shadow-orange-100">
@@ -113,11 +113,11 @@
                 <table class="w-full text-left">
                     <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-400 tracking-wider">
                         <tr>
-                            <th class="p-4">Tournament</th>
+                            <th class="p-4">Tournament Name</th>
                             <th class="p-4 text-center">Schedule</th>
                             <th class="p-4 text-center">Fee ($)</th>
                             <th class="p-4 text-center">Cost ($)</th>
-                            <th class="p-4 text-right">Action</th>
+                            <th class="p-4 text-right">Remove</th>
                         </tr>
                     </thead>
                     <tbody id="tournament-list-body" class="divide-y divide-slate-100 font-bold text-xs text-slate-700 uppercase">
@@ -127,13 +127,13 @@
 
             <div class="pt-6 border-t border-slate-100 flex flex-wrap justify-between gap-4">
                 <div class="flex gap-3">
-                    <button class="bg-[#3A5B66] hover:bg-[#2D4750] text-white font-black py-3 px-6 rounded-xl uppercase text-[10px] transition-all flex items-center gap-2">
+                    <button class="bg-[#3A5B66] hover:bg-[#2D4750] text-white font-black py-3 px-6 rounded-xl uppercase text-[10px] transition-all">
                         🔒 Lock & Open Staff Panel
                     </button>
-                    <button class="bg-[#3A5B66] hover:bg-[#2D4750] text-white font-black py-3 px-6 rounded-xl uppercase text-[10px] transition-all flex items-center gap-2">
+                    <button class="bg-[#3A5B66] hover:bg-[#2D4750] text-white font-black py-3 px-6 rounded-xl uppercase text-[10px] transition-all">
                         📊 Generate Final Report
                     </button>
-                    <button class="bg-[#3A5B66] hover:bg-[#2D4750] text-white font-black py-3 px-6 rounded-xl uppercase text-[10px] transition-all flex items-center gap-2">
+                    <button class="bg-[#3A5B66] hover:bg-[#2D4750] text-white font-black py-3 px-6 rounded-xl uppercase text-[10px] transition-all">
                         💾 Download Backup (.txt)
                     </button>
                 </div>
@@ -198,7 +198,7 @@
                     // Mágica: Abre o Painel Roxo Profissional
                     document.getElementById('portal-page').classList.add('hidden');
                     document.getElementById('control-panel-page').classList.remove('hidden');
-                    document.getElementById('display-event-id').innerText = currentEventID;
+                    document.getElementById('display-event-id').innerText = currentEventID.replace('_LEAD', '');
                     // loadTournaments(); // Ativaremos no próximo B.S.
                 } else {
                     showMessage('success', 'Acesso Staff Concedido', 'O evento foi validado. Redirecionando para a calculadora...');
@@ -235,6 +235,33 @@
                 showMessage('success', 'Registro Concluído', `O evento ${currentEventID} foi cadastrado com sucesso.`);
                 location.reload(); 
             }
+        }
+async function resetSystem() {
+            const confirmFirst = confirm("⚠️ CRITICAL WARNING: This action will PERMANENTLY DELETE the ENTIRE EVENT and all tournament data!\n\nThis CANNOT be undone. Are you absolutely sure?");
+            
+            if (confirmFirst) {
+                const secondCheck = prompt("To confirm the TOTAL DELETION, please type 'DELETE' (all caps) below:");
+                
+                if (secondCheck === 'DELETE') {
+                    alert("🗑️ System reset initiated. All event data is being wiped.");
+                    location.reload();
+                } else {
+                    alert("Action cancelled. Confirmation text did not match.");
+                }
+            }
+        }
+
+        async function addTournament() {
+            const name = document.getElementById('t-name').value.trim();
+            const date = document.getElementById('t-date').value;
+            const hour = document.getElementById('t-hour').value;
+            const fee = document.getElementById('t-fee').value;
+            const cost = document.getElementById('t-cost').value;
+
+            if (!name || !fee || !cost) {
+                return alert("⚠️ Please fill in Name, Fee, and Cost.");
+            }
+            alert(`Ready to add: ${name} on ${date} at ${hour}`);
         }
     </script>
 </body>
