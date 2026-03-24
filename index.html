@@ -12,7 +12,13 @@
         /* DESIGN APROVADO: Fundo escuro e borda dourada */
         .admin-panel { background: #1d3557; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-bottom: 5px solid var(--gold); }
         .staff-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; display: none; }
-        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .grid-inputs { 
+    display: grid; 
+    grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr 0.8fr auto; 
+    gap: 12px; 
+    margin-bottom: 15px; 
+    align-items: end; 
+}
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 0.7rem; font-weight: bold; margin-bottom: 4px; color: #ccc; text-transform: uppercase; }
         input, select { padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.9rem; }
@@ -66,7 +72,10 @@
         </div>
         
         <div class="grid-inputs">
-            <div class="input-group"><label>Event Name</label><input type="text" id="masterEvent" readonly></div>
+    <div class="input-group">
+        <label>Event Name</label>
+        <input type="text" id="masterEvent" autocomplete="off" placeholder="e.g. CAMPINAS REGIONAL'26">
+    </div>
             <div class="input-group"><label>Logo Type</label><select id="masterLogo"><option value="REGIONAL">REGIONAL</option><option value="IC">INTERNATIONAL (IC)</option></select></div>
             <div class="input-group"><label>Participation %</label><input type="number" id="masterTax" placeholder="e.g. 20"></div>
             <div class="input-group"><label>Spread Factor</label><select id="masterFactor"><option value="2.0">2.0 (Aggressive)</option><option value="1.75">1.75 (Balanced)</option><option value="1.5">1.5 (Flat)</option></select></div>
@@ -150,9 +159,11 @@
                     // Se for Lead, abre o setup (Tela Escura)
                     document.getElementById('setupArea').style.display = 'block';
                     document.getElementById('masterEvent').value = currentEventID.replace('_LEAD', '');
+                    loadTournaments();
                 } else {
                     // Se for Staff, abre a operação (Tela Branca)
                     document.getElementById('staffArea').style.display = 'block';
+                    loadTournaments(); // Adicionei aqui também para a Staff ver os torneios ao entrar!
                 }
             } else {
                 alert("ACCESS DENIED: Event not found.");
@@ -168,41 +179,94 @@
             const cost = parseFloat(document.getElementById('tCost').value) || 0;
             
             if(!name || !hour || isNaN(fee)) return alert("Please fill Name, Hour and Fee!");
-            
-            tournamentCatalog.push({ name, day, hour, fee, cost });
-            renderCatalog();
-            
-            // Limpa os campos após adicionar
-            document.getElementById('tName').value = "";
-            document.getElementById('tHour').value = "";
-            document.getElementById('tFee').value = "";
-            document.getElementById('tCost').value = "";
+
+            // Envia para o Supabase
+            saveToDatabase(name, day, hour, fee, cost);
         }
 
-        function renderCatalog() {
-            const tbody = document.querySelector('#catalogTable tbody');
-            const select = document.getElementById('staffSelectTourney');
-            tbody.innerHTML = ""; 
-            select.innerHTML = "";
-            
-            tournamentCatalog.forEach((t, i) => {
-                // Renderiza na tabela com as 6 colunas que criamos
-                tbody.innerHTML += `<tr>
-                    <td>${t.name}</td>
-                    <td>${t.day}</td>
-                    <td>${t.hour}</td>
-                    <td>$${t.fee}</td>
-                    <td>$${t.cost}</td>
-                    <td><button onclick="removeT(${i})">❌</button></td>
-                </tr>`;
-                
-                // Renderiza no seletor da Staff (organizado por Dia e Hora)
-                select.innerHTML += `<option value="${i}">${t.day} | ${t.hour} - ${t.name}</option>`;
-            });
+        function renderCatalog() {const tbody = document.querySelector('#catalogTable tbody');
+    const select = document.getElementById('staffSelectTourney');
+    
+    tbody.innerHTML = ""; 
+    select.innerHTML = "";
+
+    tournamentCatalog.forEach((t, i) => {
+        // Agora o código busca 'day' e 'hour' separadamente, resolvendo o undefined
+        tbody.innerHTML += `
+        <tr>
+            <td>${t.name}</td>
+            <td>${t.day}</td>
+            <td>${t.hour}</td>
+            <td>$${t.fee}</td>
+            <td>$${t.cost}</td>
+            <td><button onclick="removeT(${i})">❌</button></td>
+        </tr>`;
+
+        // O menu suspenso da Staff também fica organizado
+        select.innerHTML += `<option value="${i}">${t.day} | ${t.hour} - ${t.name}</option>`;
+    });
+        }
+async function saveToDatabase(name, day, hour, fee, cost) {
+            const { data, error } = await _supabase
+                .from('tournament_catalog')
+                .insert([{ 
+                    event_id: currentEventID, 
+                    name: name,
+                    t_date: day,
+                    t_hour: hour,
+                    t_fee: fee.toString(),
+                    t_cost: cost.toString()
+                }]);
+
+            if (error) {
+                console.error("Error saving:", error);
+                alert("Error saving to database!");
+            } else {
+                // Se salvou no banco, limpa os campos e RECARREGA a lista do banco
+                document.getElementById('tName').value = "";
+                document.getElementById('tHour').value = "";
+                document.getElementById('tFee').value = "";
+                document.getElementById('tCost').value = "";
+                loadTournaments(); 
+            }
         }
 
-        function removeT(i) { tournamentCatalog.splice(i, 1); renderCatalog(); }
+        async function loadTournaments() {
+            const { data, error } = await _supabase
+                .from('tournament_catalog')
+                .select('*')
+                .eq('event_id', currentEventID);
 
+            if (data) {
+                // Atualiza nossa lista local com o que veio do banco
+                tournamentCatalog = data.map(item => ({
+                    id: item.id, // Guardamos o ID real do banco para deletar depois
+                    name: item.name,
+                    day: item.t_date,
+                    hour: item.t_hour,
+                    fee: item.t_fee,
+                    cost: item.t_cost
+                }));
+                renderCatalog();
+            }
+        }
+      async function removeT(index) {
+            const tourney = tournamentCatalog[index];
+            if (confirm(`Are you sure you want to delete "${tourney.name}"?`)) {
+                const { error } = await _supabase
+                    .from('tournament_catalog')
+                    .delete()
+                    .eq('id', tourney.id); 
+
+                if (error) {
+                    console.error("Error deleting:", error);
+                    alert("Error deleting from database!");
+                } else {
+                    // Se deletou no banco, recarrega a lista para sumir da tela
+                    loadTournaments(); 
+                }
+            }
+        }
         function lockSetup() {
             document.getElementById('setupArea').style.display = 'none';
             document.getElementById('staffArea').style.display = 'block';
