@@ -39,74 +39,111 @@
         </div>
     </div>
 
-    <div id="control-panel-page" class="hidden max-w-7xl mx-auto space-y-6">
+  <div id="control-panel-page" class="hidden max-w-7xl mx-auto space-y-4">
         
-        <div class="bg-white p-6 rounded-2xl shadow-xl flex justify-between items-center border border-slate-100">
-            <div class="flex items-center gap-4">
-                <div class="bg-purple-100 p-4 rounded-xl text-purple-600">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 012-2v-6a2 2 0 01-2-2zM7 7h10M5 7a2 2 0 012-2h10a2 2 0 012 2M5 7a2 2 0 00-2 2v6a2 2 0 002 2V7z"></path></svg>
-                </div>
+        <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-100">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h2 id="display-event-id" class="text-3xl font-black text-slate-950 uppercase tracking-tighter">EVENTO</h2>
-                    <p class="text-purple-600 text-sm font-bold uppercase tracking-widest">Painel de Configuração de Torneios</p>
+                    <h1 class="text-2xl font-black text-slate-900 tracking-tighter">SIDES CORE MANAGER DATA</h1>
+                    <p id="display-event-id" class="text-blue-600 font-bold uppercase text-xs tracking-widest">EVENT ID</p>
                 </div>
+
+                <div class="flex flex-wrap items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div class="flex flex-col">
+                        <label class="text-[9px] font-black text-slate-400 uppercase">Logo Type</label>
+                        <select id="event-logo" class="bg-transparent font-bold text-sm outline-none text-slate-700">
+                            <option value="REGIONAL">REGIONAL</option>
+                            <option value="IC">IC</option>
+                        </select>
+                    </div>
+                    <div class="h-8 w-[1px] bg-slate-200"></div>
+                    <div class="flex flex-col">
+                        <label class="text-[9px] font-black text-slate-400 uppercase">Participation %</label>
+                        <input type="number" id="event-part" placeholder="0" class="bg-transparent font-bold text-sm outline-none w-16 text-slate-700">
+                    </div>
+                    <div class="h-8 w-[1px] bg-slate-200"></div>
+                    <div class="flex flex-col">
+                        <label class="text-[9px] font-black text-slate-400 uppercase">Spread Factor</label>
+                        <select id="event-spread" class="bg-transparent font-bold text-sm outline-none text-slate-700">
+                            <option value="2.0">2.0 (Aggressive)</option>
+                            <option value="1.75">1.75 (Balanced)</option>
+                            <option value="1.5">1.5 (Flat)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="location.reload()" class="text-slate-400 hover:text-red-500 font-black text-[10px] uppercase transition-all">Exit System</button>
             </div>
-            <button onclick="location.reload()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-5 py-3 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                Sair / Trocar
-            </button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-[350px,1fr] gap-6">
-            
-            <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 space-y-6 h-fit">
-                <div class="border-b pb-4 mb-6">
-                    <h3 class="text-xl font-bold text-slate-900 tracking-tight">Novo Torneio</h3>
-                    <p class="text-slate-500 text-xs">Preencha os dados do sides-event</p>
+        <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-100">
+            <div class="grid grid-cols-1 md:grid-cols-[2fr,1fr,1fr,1fr,1fr,auto] gap-4 items-end">
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1">Tournament Name</label>
+                    <input type="text" id="t-name" placeholder="EX: TURBO R$ 100" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-orange-500 font-bold uppercase text-xs">
                 </div>
-
-                <input type="text" id="t-name" autocomplete="off" placeholder="Nome (Ex: Turbo R$ 100)" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-purple-500 font-semibold uppercase text-sm">
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fee (R$)</label>
-                        <input type="number" id="t-fee" placeholder="0" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-purple-500 font-bold text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Currency/Unit</label>
-                        <input type="number" id="t-cost" placeholder="100" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-purple-500 font-bold text-sm">
-                    </div>
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1">Date</label>
+                    <select id="t-date" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none font-bold text-xs text-slate-700">
+                        <option value="DAY 1">DAY 1</option>
+                        <option value="DAY 2">DAY 2</option>
+                        <option value="DAY 3">DAY 3</option>
+                    </select>
                 </div>
-
-                <button onclick="addTournament()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 uppercase text-sm tracking-wide">
-                    + Adicionar na Lista
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1">Hour</label>
+                    <input type="time" id="t-hour" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none font-bold text-xs">
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1">Entry Fee $</label>
+                    <input type="number" id="t-fee" placeholder="0" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none font-bold text-xs">
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1">Material Cost $</label>
+                    <input type="number" id="t-cost" placeholder="0" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none font-bold text-xs">
+                </div>
+                <button onclick="addTournament()" class="bg-orange-500 hover:bg-orange-600 text-white font-black px-6 py-3.5 rounded-lg uppercase text-xs transition-all active:scale-95 shadow-lg shadow-orange-100">
+                    +Add
                 </button>
             </div>
+        </div>
 
-            <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
-                <div class="border-b pb-4 mb-6 flex justify-between items-center">
-                    <h3 class="text-xl font-bold text-slate-900 tracking-tight">Catálogo de Torneios Ativos</h3>
-                    <p class="text-xs font-bold text-slate-400 uppercase">Sides Core Data - v1.0</p>
-                </div>
+        <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-100 space-y-6">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                        <tr>
+                            <th class="p-4">Tournament</th>
+                            <th class="p-4 text-center">Schedule</th>
+                            <th class="p-4 text-center">Fee ($)</th>
+                            <th class="p-4 text-center">Cost ($)</th>
+                            <th class="p-4 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tournament-list-body" class="divide-y divide-slate-100 font-bold text-xs text-slate-700 uppercase">
+                        </tbody>
+                </table>
+            </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-slate-50 text-[11px] font-bold uppercase text-slate-500 tracking-wider">
-                            <tr>
-                                <th class="p-5">Nome do Torneio</th>
-                                <th class="p-5 text-center">Fee (R$)</th>
-                                <th class="p-5 text-center">Unit/Cost</th>
-                                <th class="p-5 text-center">Gestão</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tournament-list-body" class="divide-y divide-slate-100 font-semibold text-sm text-slate-800 uppercase">
-                            </tbody>
-                    </table>
+            <div class="pt-6 border-t border-slate-100 flex flex-wrap justify-between gap-4">
+                <div class="flex gap-3">
+                    <button class="bg-[#3A5B66] hover:bg-[#2D4750] text-white font-black py-3 px-6 rounded-xl uppercase text-[10px] transition-all flex items-center gap-2">
+                        🔒 Lock & Open Staff Panel
+                    </button>
+                    <button class="bg-[#3A5B66] hover:bg-[#2D4750] text-white font-black py-3 px-6 rounded-xl uppercase text-[10px] transition-all flex items-center gap-2">
+                        📊 Generate Final Report
+                    </button>
+                    <button class="bg-[#3A5B66] hover:bg-[#2D4750] text-white font-black py-3 px-6 rounded-xl uppercase text-[10px] transition-all flex items-center gap-2">
+                        💾 Download Backup (.txt)
+                    </button>
                 </div>
+                
+                <button onclick="resetSystem()" class="bg-orange-500 hover:bg-orange-600 text-white font-black py-3 px-8 rounded-xl uppercase text-[10px] transition-all shadow-lg shadow-orange-100">
+                    Reset System
+                </button>
             </div>
         </div>
     </div>
-
     <div id="lead-setup-page" class="hidden min-h-[90vh] flex items-center justify-center">
         <div class="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-md border-t-8 border-green-600">
             <div class="mb-8 border-b pb-6">
