@@ -58,26 +58,33 @@
 
         let currentEventID = '';
 
-        function checkAccess() {
+      async function checkAccess() {
             const input = document.getElementById('event-id-input');
             const id = input.value.trim().toUpperCase();
             
-            if (!id) {
-                alert("⚠️ Digite o ID do Evento!");
-                return;
-            }
+            if (!id) return alert("⚠️ Digite o ID!");
 
             currentEventID = id;
 
-            if (id.endsWith('_LEAD')) {
-                // MÁGICA: Esconde uma tela e mostra a outra
-                document.getElementById('portal-page').classList.add('hidden');
-                document.getElementById('lead-setup-page').classList.remove('hidden');
+            // BUSCA NO BANCO: Esse ID já existe?
+            const { data, error } = await _supabase
+                .from('tournament_catalog')
+                .select('*')
+                .eq('event_id', id);
+
+            if (data && data.length > 0) {
+                // SE EXISTE: Vai direto para o sistema
+                alert("✅ Evento encontrado! Abrindo painel de controle...");
             } else {
-                alert("📱 ACESSO STAFF: ID " + id + " validado. Aguarde a calculadora.");
+                // SE NÃO EXISTE: Verifica se tem permissão para criar (_LEAD)
+                if (id.endsWith('_LEAD')) {
+                    document.getElementById('portal-page').classList.add('hidden');
+                    document.getElementById('lead-setup-page').classList.remove('hidden');
+                } else {
+                    alert("❌ Evento não encontrado. Se você é STAFF, verifique o ID com seu coordenador.");
+                }
             }
         }
-
        async function saveLead() {
             const name = document.getElementById('lead-name').value.trim();
             const email = document.getElementById('lead-email').value.trim();
