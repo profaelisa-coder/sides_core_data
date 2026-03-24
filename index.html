@@ -140,36 +140,37 @@
         let tournamentCatalog = [];
         let currentEventID = '';
 
-       async function checkAccess() {
+     async function checkAccess() {
             const idInput = document.getElementById('event-id-input');
             const id = idInput.value.trim().toUpperCase();
             if(!id) return alert("Enter ID!");
 
-            // Limpa o input visualmente por segurança
             idInput.value = '';
 
-            const searchID = id.endsWith('_LEAD') ? id : id + '_LEAD';
+            // Fluxo para o Administrador (LEAD)
+            if (id.endsWith('_LEAD')) {
+                currentEventID = id;
+                document.getElementById('login-area').style.display = 'none';
+                document.getElementById('setupArea').style.display = 'block';
+                // Define o nome do evento inicial como o ID (sem o _LEAD)
+                document.getElementById('masterEvent').value = id.replace('_LEAD', '');
+                loadTournaments();
+                return; 
+            }
+
+            // Fluxo para o STAFF (Só entra se o Lead já tiver criado algo)
+            const searchID = id + '_LEAD';
             const { data, error } = await _supabase.from('tournament_catalog').select('*').eq('event_id', searchID);
 
             if (data && data.length > 0) {
                 currentEventID = searchID;
                 document.getElementById('login-area').style.display = 'none';
-                
-                if (id.endsWith('_LEAD')) {
-                    // Se for Lead, abre o setup (Tela Escura)
-                    document.getElementById('setupArea').style.display = 'block';
-                    document.getElementById('masterEvent').value = currentEventID.replace('_LEAD', '');
-                    loadTournaments();
-                } else {
-                    // Se for Staff, abre a operação (Tela Branca)
-                    document.getElementById('staffArea').style.display = 'block';
-                    loadTournaments(); // Adicionei aqui também para a Staff ver os torneios ao entrar!
-                }
+                document.getElementById('staffArea').style.display = 'block';
+                loadTournaments();
             } else {
-                alert("ACCESS DENIED: Event not found.");
+                alert("ACCESS DENIED: This event hasn't been set up by a Lead yet.");
             }
         }
-
         // Lógica de manipulação da tabela (Local por enquanto)
         function addTournament() {
             const name = document.getElementById('tName').value.trim();
