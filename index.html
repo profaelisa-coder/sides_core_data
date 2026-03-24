@@ -30,7 +30,39 @@
             <span>sides_core_data - 2026 Edition</span>
         </div>
     </div>
+<div id="control-panel-page" class="hidden bg-white p-8 rounded-2xl shadow-2xl w-full max-w-4xl border-t-8 border-purple-600">
+        <div class="flex justify-between items-center mb-8 border-b pb-4">
+            <div>
+                <h2 id="display-event-id" class="text-2xl font-black text-gray-800 uppercase tracking-tighter text-blue-600">EVENTO</h2>
+                <p class="text-purple-600 text-[10px] font-black uppercase tracking-widest">Painel de Controle de Torneios</p>
+            </div>
+            <button onclick="location.reload()" class="bg-gray-100 hover:bg-gray-200 text-gray-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all">Sair / Trocar ID</button>
+        </div>
 
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 p-6 rounded-xl mb-8 border-2 border-dashed border-gray-200">
+            <input type="text" id="t-name" autocomplete="off" placeholder="NOME DO TORNEIO" class="p-3 rounded-lg border outline-none focus:border-purple-500 font-bold uppercase text-xs">
+            <input type="number" id="t-fee" placeholder="FEE (R$)" class="p-3 rounded-lg border outline-none focus:border-purple-500 font-bold text-xs">
+            <input type="number" id="t-cost" placeholder="CURRENCY/UNIT" class="p-3 rounded-lg border outline-none focus:border-purple-500 font-bold text-xs">
+            <button onclick="addTournament()" class="bg-purple-600 hover:bg-purple-700 text-white font-black py-3 rounded-lg uppercase text-xs transition-all active:scale-95">
+                + Adicionar
+            </button>
+        </div>
+
+        <div class="overflow-hidden rounded-xl border border-gray-200">
+            <table class="w-full text-left">
+                <thead class="bg-gray-100 text-[10px] font-black uppercase text-gray-500">
+                    <tr>
+                        <th class="p-4">Torneio</th>
+                        <th class="p-4">Fee (R$)</th>
+                        <th class="p-4">Cost</th>
+                        <th class="p-4 text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tournament-list-body" class="divide-y divide-gray-100 font-bold text-sm text-gray-700">
+                    </tbody>
+            </table>
+        </div>
+    </div>
     <div id="lead-setup-page" class="hidden bg-white p-10 rounded-2xl shadow-2xl w-full max-w-md border-t-8 border-green-600">
         <div class="mb-8">
             <h2 class="text-2xl font-black text-gray-800 uppercase">Configurar Gestão</h2>
@@ -78,9 +110,13 @@
             if (data && data.length > 0) {
                 currentEventID = searchID;
                 if (id.endsWith('_LEAD')) {
-                    alert("👑 GESTÃO: Evento encontrado. Próximo passo: Painel de Controle.");
+                    // Mágica: Esconde o portal e abre o Painel Roxo
+                    document.getElementById('portal-page').classList.add('hidden');
+                    document.getElementById('control-panel-page').classList.remove('hidden');
+                    document.getElementById('display-event-id').innerText = currentEventID;
+                    // loadTournaments(); // Ativaremos no próximo B.S.
                 } else {
-                    alert("📱 STAFF: Evento encontrado. Próximo passo: Calculadora.");
+                    alert("📱 STAFF: Acesso à Calculadora em construção...");
                 }
             } else {
                 if (id.endsWith('_LEAD')) {
