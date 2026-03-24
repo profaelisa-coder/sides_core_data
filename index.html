@@ -78,10 +78,36 @@
             }
         }
 
-        async function saveLead() {
-            const name = document.getElementById('lead-name').value;
-            if(!name) return alert("Preencha o nome!");
-            alert("Perfeito, " + name + "! O próximo passo será gravar no banco.");
+       async function saveLead() {
+            const name = document.getElementById('lead-name').value.trim();
+            const email = document.getElementById('lead-email').value.trim();
+            const pass = document.getElementById('lead-pass').value.trim();
+
+            if (!name || !email || !pass) {
+                return alert("⚠️ Ei! Preencha todos os campos antes de continuar.");
+            }
+
+            // MÁGICA: Inserindo o primeiro dado no Supabase!
+            const { data, error } = await _supabase
+                .from('tournament_catalog')
+                .insert([
+                    { 
+                        event_id: currentEventID, 
+                        name: name 
+                    }
+                ])
+                .select();
+
+            if (error) {
+                console.error("Erro no Supabase:", error);
+                alert("❌ Ops, algo deu errado: " + error.message);
+            } else {
+                alert("🚀 SUCESSO ABSOLUTO! O evento " + currentEventID + " agora existe no seu banco de dados!");
+                console.log("Dados salvos:", data);
+                
+                // Por enquanto, vamos apenas dar um "reset" para você ver que funcionou
+                location.reload(); 
+            }
         }
     </script>
 </body>
