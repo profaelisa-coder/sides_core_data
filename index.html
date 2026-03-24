@@ -215,8 +215,8 @@ async function saveToDatabase(name, day, hour, fee, cost) {
                     name: name,
                     t_date: day,
                     t_hour: hour,
-                    t_fee: fee.toString(),
-                    t_cost: cost.toString()
+                    t_fee: fee,
+                    t_cost: cost
                 }]);
 
             if (error) {
