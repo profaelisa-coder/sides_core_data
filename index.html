@@ -1,268 +1,233 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIDES CORE DATA - v1.0</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Core Prize Manager v2.0 - Royal Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .bg-gradient-sides { background: linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 100%); }
+        :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        
+        /* DESIGN APROVADO: Fundo escuro e borda dourada */
+        .admin-panel { background: #1d3557; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-bottom: 5px solid var(--gold); }
+        .staff-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; display: none; }
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .input-group { display: flex; flex-direction: column; }
+        label { font-size: 0.7rem; font-weight: bold; margin-bottom: 4px; color: #ccc; text-transform: uppercase; }
+        input, select { padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 0.9rem; }
+        
+        .tourney-list { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.05); margin-top: 10px; }
+        .tourney-list th { padding: 10px; text-align: left; border: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; color: var(--gold); }
+        .tourney-list td { padding: 10px; text-align: left; border: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; color: white !important; }
+        
+        button { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; text-transform: uppercase; }
+        .btn-add { background: var(--gold); color: #1d3557; height: 42px; align-self: flex-end; }
+        .btn-lock { background: var(--green); color: white; width: 100%; margin-top: 20px; font-size: 1.1rem; }
+        .btn-update { background: var(--primary-red); color: white; }
+        .btn-print { background: var(--dark); color: white; }
+        .btn-close-event { background: #8e44ad; color: white; width: 100%; margin-top: 10px; border-bottom: 3px solid #6c3483; }
+
+        /* Estilo da Página de Impressão */
+        .payout-page { background: white; width: 210mm; min-height: 297mm; padding: 15mm; margin: 20px auto; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.1); display: none; }
+        .header-payout { text-align: center; border-bottom: 3px solid var(--dark); padding-bottom: 10px; margin-bottom: 20px; }
+        .event-name { font-size: 1.8rem; color: var(--dark); text-transform: uppercase; margin: 5px 0; }
+        
+        table.payout-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .payout-table th { background: var(--dark); color: white; padding: 12px; text-transform: uppercase; font-size: 0.85rem; }
+        .payout-table td { padding: 12px; border-bottom: 1px dotted #ccc; text-align: center; font-size: 1.1rem; }
+        .rank-col { text-align: left !important; padding-left: 30px !important; font-weight: bold; color: var(--dark); }
+
+        /* Portal de Entrada */
+        #login-area { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
+        .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 350px; text-align: center; }
+
+        @media print { .no-print { display: none !important; } .payout-page { display: block !important; border: none; width: 100%; box-shadow: none; margin: 0; } }
     </style>
 </head>
-<body class="bg-slate-950 min-h-screen p-2 md:p-6 text-slate-800">
+<body>
 
-    <div id="portal-page" class="flex items-center justify-center min-h-[90vh]">
-        <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md border-t-8 border-blue-600 transition-all duration-500">
-            <div class="text-center mb-10 border-b pb-6">
-                <h1 class="text-3xl font-black text-slate-900 tracking-tighter">CORE PRIZE</h1>
-                <p class="text-blue-600 font-bold uppercase text-xs tracking-widest mt-1">Sides Data Manager</p>
+    <div id="login-area" class="no-print">
+        <div class="login-card">
+            <h2 style="color: var(--dark); margin-bottom: 5px;">CORE PRIZE</h2>
+            <p style="font-size: 0.8rem; color: #666; margin-bottom: 25px; font-weight: bold;">SIDES DATA MANAGER</p>
+            <div class="input-group">
+                <label style="color: #666; text-align: left;">Event ID</label>
+                <input type="text" id="event-id-input" autocomplete="off" placeholder="Enter ID..." style="margin-bottom: 20px; text-transform: uppercase;">
             </div>
-            
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-2 tracking-wide">ID do Evento</label>
-                    <input type="text" id="event-id-input" autocomplete="off" placeholder="Digite o ID fornecido pela organização" 
-                           class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-200 outline-none transition-all text-lg font-bold uppercase text-slate-950">
-                </div>
-                
-                <button onclick="checkAccess()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95 uppercase tracking-wide">
-                    Acessar Sistema
-                </button>
-            </div>
-            
-            <div class="mt-10 pt-6 border-t border-slate-100 text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                <span>sides_core_data v1.0 - 2026 Edition</span>
-            </div>
+            <button onclick="checkAccess()" style="background: var(--dark); color: white; width: 100%;">Access System</button>
         </div>
     </div>
 
-    <div id="control-panel-page" class="hidden max-w-7xl mx-auto space-y-4">
+    <div id="setupArea" class="admin-panel no-print" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin-top:0">🛡️ SIDES CORE MANAGER DATA</h3>
+            <button onclick="location.reload()" style="background: none; color: white; font-size: 0.7rem; opacity: 0.6;">Exit</button>
+        </div>
         
-        <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-100">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                    <h1 class="text-2xl font-black text-slate-900 tracking-tighter uppercase">SIDES CORE MANAGER DATA</h1>
-                    <p id="display-event-id" class="text-blue-600 font-bold uppercase text-xs tracking-widest">EVENT NAME</p>
-                </div>
-
-                <div class="flex flex-wrap items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <div class="flex flex-col">
-                        <label class="text-[9px] font-black text-slate-400 uppercase">Logo Type</label>
-                        <select id="event-logo" class="bg-transparent font-bold text-sm outline-none text-slate-700">
-                            <option value="REGIONAL">REGIONAL</option>
-                            <option value="IC">IC</option>
-                        </select>
-                    </div>
-                    <div class="h-8 w-[1px] bg-slate-200"></div>
-                    <div class="flex flex-col">
-                        <label class="text-[9px] font-black text-slate-400 uppercase">Participation %</label>
-                        <input type="number" id="event-part" placeholder="0" class="bg-transparent font-bold text-sm outline-none w-16 text-slate-700">
-                    </div>
-                    <div class="h-8 w-[1px] bg-slate-200"></div>
-                    <div class="flex flex-col">
-                        <label class="text-[9px] font-black text-slate-400 uppercase">Spread Factor</label>
-                        <select id="event-spread" class="bg-transparent font-bold text-sm outline-none text-slate-700">
-                            <option value="2.0">2.0 (Aggressive)</option>
-                            <option value="1.75">1.75 (Balanced)</option>
-                            <option value="1.5">1.5 (Flat)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button onclick="location.reload()" class="text-slate-400 hover:text-red-500 font-black text-[10px] uppercase transition-all tracking-widest">Exit System</button>
-            </div>
+        <div class="grid-inputs">
+            <div class="input-group"><label>Event Name</label><input type="text" id="masterEvent" readonly></div>
+            <div class="input-group"><label>Logo Type</label><select id="masterLogo"><option value="REGIONAL">REGIONAL</option><option value="IC">INTERNATIONAL (IC)</option></select></div>
+            <div class="input-group"><label>Participation %</label><input type="number" id="masterTax" placeholder="e.g. 20"></div>
+            <div class="input-group"><label>Spread Factor</label><select id="masterFactor"><option value="2.0">2.0 (Aggressive)</option><option value="1.75">1.75 (Balanced)</option><option value="1.5">1.5 (Flat)</option></select></div>
         </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-100">
-            <div class="grid grid-cols-1 md:grid-cols-[2fr,1fr,1fr,1fr,1fr,auto] gap-4 items-end">
-                <div class="flex flex-col">
-                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-tight">Tournament Name</label>
-                    <input type="text" id="t-name" placeholder="TCG BUILD & BATTLE" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-orange-500 font-bold uppercase text-xs">
-                </div>
-                <div class="flex flex-col">
-                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-tight">Date</label>
-                    <select id="t-date" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none font-bold text-xs text-slate-700">
-                        <option value="DAY 1">DAY 1</option>
-                        <option value="DAY 2">DAY 2</option>
-                        <option value="DAY 3">DAY 3</option>
-                    </select>
-                </div>
-                <div class="flex flex-col">
-                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-tight">Hour</label>
-                    <input type="text" id="t-hour" placeholder="e.g. 2:00 PM" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none font-bold text-xs">
-                </div>
-                <div class="flex flex-col">
-                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-tight">Entry Fee $</label>
-                    <input type="number" id="t-fee" placeholder="0" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none font-bold text-xs">
-                </div>
-                <div class="flex flex-col">
-                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-tight">Material Cost $</label>
-                    <input type="number" id="t-cost" placeholder="0" class="p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none font-bold text-xs">
-                </div>
-                <button onclick="addTournament()" class="bg-orange-500 hover:bg-orange-600 text-white font-black px-6 py-3.5 rounded-lg uppercase text-xs transition-all active:scale-95 shadow-lg shadow-orange-100">
-                    +Add
-                </button>
-            </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-100 space-y-6">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-400 tracking-wider">
-                        <tr>
-                            <th class="p-4">Tournament Name</th>
-                            <th class="p-4 text-center">Schedule</th>
-                            <th class="p-4 text-center">Fee ($)</th>
-                            <th class="p-4 text-center">Cost ($)</th>
-                            <th class="p-4 text-right">Remove</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tournament-list-body" class="divide-y divide-slate-100 font-bold text-xs text-slate-700 uppercase">
-                        </tbody>
-                </table>
-            </div>
-
-            <div class="pt-6 border-t border-slate-100 flex flex-wrap justify-between gap-4">
-                <div class="flex gap-3">
-                    <button class="bg-[#3A5B66] hover:bg-[#2D4750] text-white font-black py-3 px-6 rounded-xl uppercase text-[10px] transition-all">
-                        🔒 Lock & Open Staff Panel
-                    </button>
-                    <button class="bg-[#3A5B66] hover:bg-[#2D4750] text-white font-black py-3 px-6 rounded-xl uppercase text-[10px] transition-all">
-                        📊 Generate Final Report
-                    </button>
-                    <button class="bg-[#3A5B66] hover:bg-[#2D4750] text-white font-black py-3 px-6 rounded-xl uppercase text-[10px] transition-all">
-                        💾 Download Backup (.txt)
-                    </button>
-                </div>
-                
-                <button onclick="resetSystem()" class="bg-orange-500 hover:bg-orange-600 text-white font-black py-3 px-8 rounded-xl uppercase text-[10px] transition-all shadow-lg shadow-orange-100">
-                    Reset System
-                </button>
-            </div>
-        </div>
+        <h4 style="color: var(--gold); margin: 20px 0 10px; text-transform: uppercase;">📅 Tournament Catalog</h4>
+        <div class="grid-inputs">
+            <div class="input-group"><label>Name</label><input type="text" id="tName" placeholder="TCG BUILD & BATTLE"></div><div style="display: flex; gap: 5px;">
+    <div class="input-group" style="flex: 1.5;">
+        <label>Day</label>
+        <select id="tDay">
+            <option value="Day 1">Day 1</option>
+            <option value="Day 2">Day 2</option>
+            <option value="Day 3">Day 3</option>
+        </select>
     </div>
-    <div id="lead-setup-page" class="hidden min-h-[90vh] flex items-center justify-center">
-        <div class="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-md border-t-8 border-green-600">
-            <div class="mb-8 border-b pb-6">
-                <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tight">Configurar Gestão</h2>
-                <p class="text-green-600 text-xs font-bold uppercase tracking-wider mt-1">Primeiro acesso detectado</p>
-            </div>
-            <div class="space-y-4">
-                <input type="text" id="lead-name" placeholder="Nome Completo" autocomplete="off" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-green-500 font-bold text-sm">
-                <input type="email" id="lead-email" placeholder="E-mail" autocomplete="off" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-green-500 font-bold text-sm">
-                <input type="password" id="lead-pass" placeholder="Senha de 6 Dígitos" maxlength="6" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-green-500 font-bold text-sm">
-                <button onclick="saveLead()" class="w-full bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 uppercase tracking-wide">
-                    Confirmar e Iniciar
-                </button>
-            </div>
+    <div class="input-group" style="flex: 1;">
+        <label>Hour</label>
+        <input type="text" id="tHour" placeholder="2:00 PM">
+    </div>
+</div>
+            <div class="input-group"><label>Entry Fee $</label><input type="number" id="tFee"></div>
+            <div class="input-group"><label>Material Cost $</label><input type="number" id="tCost"></div>
+            <button class="btn-add" onclick="addTournament()">+ ADD</button>
         </div>
+
+        <table class="tourney-list" id="catalogTable">
+            <thead><tr><th>Tournament Name</th><th>Day</th><th>Hour</th><th>Entry</th><th>Material</th><th>Action</th></tr></thead>
+            <tbody></tbody>
+        </table>
+
+        <button class="btn-lock" onclick="lockSetup()">🔒 LOCK & OPEN STAFF PANEL</button>
+        <button class="btn-close-event" onclick="showFinalReport()">📊 GENERATE FINAL REPORT</button>
+        <button onclick="resetSystem()" style="background: var(--primary-red); color: white; width: 100%; margin-top: 10px; font-size: 0.7rem;">⚠️ RESET SYSTEM</button>
+    </div>
+
+    <div id="staffArea" class="staff-panel no-print">
+        <h3>🕹️ STAFF OPERATION <button onclick="unlockSetup()" style="font-size: 0.7rem; padding: 5px;">Back to Setup</button></h3>
+        <div class="grid-inputs">
+            <div class="input-group"><label>Tournament</label><select id="staffSelectTourney" onchange="updateStaffFee()"></select></div>
+            <div class="input-group"><label>Fee</label><input type="number" id="staffFee" disabled></div>
+            <div class="input-group"><label>Players</label><input type="number" id="staffPlayers" value="0"></div>
+        </div>
+        <div style="display: flex; gap: 10px;"><button class="btn-update" style="flex: 1;" onclick="generatePayout()">🔄 UPDATE VIEW</button><button class="btn-print" style="flex: 1;" onclick="window.print()">🖨️ PRINT PDF</button></div>
+    </div>
+
+    <div id="printArea" class="payout-page">
+        <div class="header-payout">
+            <h1 id="outEventName" class="event-name"></h1>
+            <div id="outTourneyName" style="font-size: 1.4rem; color: var(--primary-red); font-weight: bold; margin-bottom: 5px;"></div>
+            <div id="outDetails" style="font-size: 1rem; color: #444; border-top: 1px solid #eee; padding-top: 8px;"></div>
+        </div>
+        <table class="payout-table"><thead><tr><th class="rank-col">Rank / Position</th><th>Prize Tickets</th></tr></thead><tbody id="payoutBody"></tbody></table>
     </div>
 
     <script>
-        // CONFIGURAÇÃO SUPABASE
+        // CONFIG SUPABASE
         const supabaseUrl = 'https://hocpoastnlcwgedvcyqs.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvY3BvYXN0bmxjd2dlZHZjeXFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODU0MTYsImV4cCI6MjA4OTg2MTQxNn0.1MvvcFsnGW4e0Bj7mzoUKs_3bGM-eHDJTOqsvgKe-pI';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+        let tournamentCatalog = [];
         let currentEventID = '';
 
-        // FUNÇÃO AUXILIAR DE MENSAGENS (Em vez de pop-ups chatos)
-        function showMessage(type, title, text) {
-            // Por enquanto vamos usar o pop-up para fechar a noite, mas amanhã vamos integrar no design
-            alert(`${type === 'success' ? '🚀' : '❌'} ${title}\n\n${text}`);
-        }
+       async function checkAccess() {
+            const idInput = document.getElementById('event-id-input');
+            const id = idInput.value.trim().toUpperCase();
+            if(!id) return alert("Enter ID!");
 
-        async function checkAccess() {
-            const input = document.getElementById('event-id-input');
-            const id = input.value.trim().toUpperCase();
-            
-            if (!id) return alert("⚠️ Por favor, digite o ID do Evento.");
+            // Limpa o input visualmente por segurança
+            idInput.value = '';
 
-            // Limpa o campo visualmente para não deixar rastros
-            input.value = '';
-
-            // Lógica: Se digitou "CAMPINAS", busca "CAMPINAS_LEAD"
             const searchID = id.endsWith('_LEAD') ? id : id + '_LEAD';
-
-            const { data, error } = await _supabase
-                .from('tournament_catalog')
-                .select('*')
-                .eq('event_id', searchID);
+            const { data, error } = await _supabase.from('tournament_catalog').select('*').eq('event_id', searchID);
 
             if (data && data.length > 0) {
                 currentEventID = searchID;
-                if (id.endsWith('_LEAD')) {
-                    // Mágica: Abre o Painel Roxo Profissional
-                    document.getElementById('portal-page').classList.add('hidden');
-                    document.getElementById('control-panel-page').classList.remove('hidden');
-                    document.getElementById('display-event-id').innerText = currentEventID.replace('_LEAD', '');
-                    // loadTournaments(); // Ativaremos no próximo B.S.
-                } else {
-                    showMessage('success', 'Acesso Staff Concedido', 'O evento foi validado. Redirecionando para a calculadora...');
-                }
-            } else {
-                if (id.endsWith('_LEAD')) {
-                    currentEventID = id;
-                    document.getElementById('portal-page').classList.add('hidden');
-                    document.getElementById('lead-setup-page').classList.remove('hidden');
-                } else {
-                    showMessage('error', 'Evento Não Encontrado', 'Verifique o ID ou entre em contato com o coordenador da Hive.');
-                }
-            }
-        }
-
-        async function saveLead() {
-            const name = document.getElementById('lead-name').value.trim();
-            const email = document.getElementById('lead-email').value.trim();
-            const pass = document.getElementById('lead-pass').value.trim();
-
-            if (!name || !email || !pass) {
-                return alert("⚠️ Por favor, preencha todos os campos.");
-            }
-
-            const { data, error } = await _supabase
-                .from('tournament_catalog')
-                .insert([{ event_id: currentEventID, name: name }])
-                .select();
-
-            if (error) {
-                console.error("Erro Supabase:", error);
-                alert("❌ Houve um erro ao salvar o evento.");
-            } else {
-                showMessage('success', 'Registro Concluído', `O evento ${currentEventID} foi cadastrado com sucesso.`);
-                location.reload(); 
-            }
-        }
-async function resetSystem() {
-            const confirmFirst = confirm("⚠️ CRITICAL WARNING: This action will PERMANENTLY DELETE the ENTIRE EVENT and all tournament data!\n\nThis CANNOT be undone. Are you absolutely sure?");
-            
-            if (confirmFirst) {
-                const secondCheck = prompt("To confirm the TOTAL DELETION, please type 'DELETE' (all caps) below:");
+                document.getElementById('login-area').style.display = 'none';
                 
-                if (secondCheck === 'DELETE') {
-                    alert("🗑️ System reset initiated. All event data is being wiped.");
-                    location.reload();
+                if (id.endsWith('_LEAD')) {
+                    // Se for Lead, abre o setup (Tela Escura)
+                    document.getElementById('setupArea').style.display = 'block';
+                    document.getElementById('masterEvent').value = currentEventID.replace('_LEAD', '');
                 } else {
-                    alert("Action cancelled. Confirmation text did not match.");
+                    // Se for Staff, abre a operação (Tela Branca)
+                    document.getElementById('staffArea').style.display = 'block';
                 }
+            } else {
+                alert("ACCESS DENIED: Event not found.");
             }
         }
 
-        async function addTournament() {
-            const name = document.getElementById('t-name').value.trim();
-            const date = document.getElementById('t-date').value;
-            const hour = document.getElementById('t-hour').value;
-            const fee = document.getElementById('t-fee').value;
-            const cost = document.getElementById('t-cost').value;
-
-            if (!name || !fee || !cost) {
-                return alert("⚠️ Please fill in Name, Fee, and Cost.");
-            }
-            alert(`Ready to add: ${name} on ${date} at ${hour}`);
+        // Lógica de manipulação da tabela (Local por enquanto)
+        function addTournament() {
+            const name = document.getElementById('tName').value.trim();
+            const day = document.getElementById('tDay').value; 
+            const hour = document.getElementById('tHour').value.trim();
+            const fee = parseFloat(document.getElementById('tFee').value);
+            const cost = parseFloat(document.getElementById('tCost').value) || 0;
+            
+            if(!name || !hour || isNaN(fee)) return alert("Please fill Name, Hour and Fee!");
+            
+            tournamentCatalog.push({ name, day, hour, fee, cost });
+            renderCatalog();
+            
+            // Limpa os campos após adicionar
+            document.getElementById('tName').value = "";
+            document.getElementById('tHour').value = "";
+            document.getElementById('tFee').value = "";
+            document.getElementById('tCost').value = "";
         }
+
+        function renderCatalog() {
+            const tbody = document.querySelector('#catalogTable tbody');
+            const select = document.getElementById('staffSelectTourney');
+            tbody.innerHTML = ""; 
+            select.innerHTML = "";
+            
+            tournamentCatalog.forEach((t, i) => {
+                // Renderiza na tabela com as 6 colunas que criamos
+                tbody.innerHTML += `<tr>
+                    <td>${t.name}</td>
+                    <td>${t.day}</td>
+                    <td>${t.hour}</td>
+                    <td>$${t.fee}</td>
+                    <td>$${t.cost}</td>
+                    <td><button onclick="removeT(${i})">❌</button></td>
+                </tr>`;
+                
+                // Renderiza no seletor da Staff (organizado por Dia e Hora)
+                select.innerHTML += `<option value="${i}">${t.day} | ${t.hour} - ${t.name}</option>`;
+            });
+        }
+
+        function removeT(i) { tournamentCatalog.splice(i, 1); renderCatalog(); }
+
+        function lockSetup() {
+            document.getElementById('setupArea').style.display = 'none';
+            document.getElementById('staffArea').style.display = 'block';
+            updateStaffFee();
+        }
+
+        function unlockSetup() {
+            if(prompt("Password:") === "1234") {
+                document.getElementById('setupArea').style.display = 'block';
+                document.getElementById('staffArea').style.display = 'none';
+            }
+        }
+
+        function updateStaffFee() {
+            const t = tournamentCatalog[document.getElementById('staffSelectTourney').value];
+            if(t) document.getElementById('staffFee').value = t.fee;
+        }
+
+        function resetSystem() {
+            if(confirm("DELETE EVERYTHING?") && prompt("Type DELETE:") === "DELETE") {
+                location.reload();
+            }
+        }
+
+        // A lógica de cálculo de prêmios (generatePayout) deve ser colada aqui conforme a v3.8 original
     </script>
 </body>
 </html>
