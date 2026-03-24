@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>sides_core_data_v1.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-950 min-h-screen flex items-center justify-center p-4">
 
@@ -16,14 +17,11 @@
         
         <div class="space-y-6">
             <div>
-                <label class="block text-xs font-black text-gray-500 uppercase mb-2">ID do Evento</label>
-                <input type="text" id="event-id-input" placeholder="" 
-                       class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-0 outline-none transition-all text-lg font-bold uppercase">
-                <p class="text-xs text-gray-400 mt-2">Digite o ID fornecido pela organização.</p>
+                <label class="block text-xs font-black text-gray-500 uppercase mb-2 text-gray-400">ID do Evento</label>
+                <input type="text" id="event-id-input" class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-0 outline-none transition-all text-lg font-bold uppercase text-gray-800">
             </div>
             
-            <button onclick="checkAccess()" 
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95 uppercase tracking-wide">
+            <button onclick="checkAccess()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 uppercase tracking-wide">
                 Acessar Sistema
             </button>
         </div>
@@ -33,7 +31,33 @@
         </div>
     </div>
 
+    <div id="lead-setup-page" class="hidden bg-white p-10 rounded-2xl shadow-2xl w-full max-w-md border-t-8 border-green-600">
+        <div class="mb-8">
+            <h2 class="text-2xl font-black text-gray-800 uppercase">Configurar Gestão</h2>
+            <p class="text-green-600 text-xs font-bold uppercase tracking-wider">Novo Evento Detectado</p>
+        </div>
+
+        <div class="space-y-4">
+            <input type="text" id="lead-name" placeholder="NOME COMPLETO" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl outline-none focus:border-green-500 uppercase font-bold text-sm">
+            <input type="email" id="lead-email" placeholder="E-MAIL DE CONTATO" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl outline-none focus:border-green-500 uppercase font-bold text-sm">
+            <input type="password" id="lead-pass" placeholder="SENHA DE 6 DÍGITOS" maxlength="6" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl outline-none focus:border-green-500 font-bold text-sm">
+            
+            <button onclick="saveLead()" class="w-full bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 uppercase">
+                Confirmar e Iniciar
+            </button>
+        </div>
+    </div>
+
     <script>
+        // CONFIGURAÇÃO SUPABASE
+        const supabaseUrl = 'https://hocpoastnlcwgedvcyqs.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvY3BvYXN0bmxjd2dlZHZjeXFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODU0MTYsImV4cCI6MjA4OTg2MTQxNn0.1MvvcFsnGW4e0Bj7mzoUKs_3bGM-eHDJTOqsvgKe-pI';
+        
+        // Criando a conexão
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let currentEventID = '';
+
         function checkAccess() {
             const input = document.getElementById('event-id-input');
             const id = input.value.trim().toUpperCase();
@@ -43,14 +67,21 @@
                 return;
             }
 
-            // LÓGICA DE FILTRO (BABY STEP)
-            if (id.endsWith('_LEAD') || id.endsWith('_TO')) {
-                alert("👑 ACESSO GESTÃO: Identificamos um LEAD/TO. Próximo passo: Tela de Cadastro.");
-                // Aqui abriremos a Página 2
+            currentEventID = id;
+
+            if (id.endsWith('_LEAD')) {
+                // MÁGICA: Esconde uma tela e mostra a outra
+                document.getElementById('portal-page').classList.add('hidden');
+                document.getElementById('lead-setup-page').classList.remove('hidden');
             } else {
-                alert("📱 ACESSO STAFF: Identificamos um STAFF. Próximo passo: Calculadora.");
-                // Aqui abriremos a Página 3
+                alert("📱 ACESSO STAFF: ID " + id + " validado. Aguarde a calculadora.");
             }
+        }
+
+        async function saveLead() {
+            const name = document.getElementById('lead-name').value;
+            if(!name) return alert("Preencha o nome!");
+            alert("Perfeito, " + name + "! O próximo passo será gravar no banco.");
         }
     </script>
 </body>
