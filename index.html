@@ -19,13 +19,32 @@
         .tourney-list { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.05); margin-top: 10px; }
         .tourney-list th { padding: 10px; text-align: left; border: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; color: var(--gold); }
         .tourney-list td { padding: 10px; text-align: left; border: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; color: white !important; }
-        
         button { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; text-transform: uppercase; }
+        
         .btn-add { background: var(--gold); color: #1d3557; height: 42px; align-self: flex-end; }
-        .btn-lock { background: var(--green); color: white; width: 100%; margin-top: 20px; font-size: 1.1rem; }
+        
+        /* Botões de Operação e Relatório (Verde Azulado) */
+        .btn-lock, .btn-close-event { 
+            background: #1a7a7a; 
+            color: white; 
+            width: 100%; 
+            margin-top: 15px; 
+            font-size: 1.1rem; 
+            border-bottom: 3px solid #135e5e; 
+        }
+
         .btn-update { background: var(--primary-red); color: white; }
         .btn-print { background: var(--dark); color: white; }
-        .btn-close-event { background: #8e44ad; color: white; width: 100%; margin-top: 10px; border-bottom: 3px solid #6c3483; }
+
+        /* Botão de Reset (Fundo Laranja +ADD com fonte escura) */
+        .btn-reset { 
+            background: var(--gold); 
+            color: #1d3557; 
+            width: 100%; 
+            margin-top: 15px; 
+            font-size: 1.1rem; 
+            border-bottom: 3px solid #cc9200; 
+        }
 
         .payout-page { background: white; width: 210mm; min-height: 297mm; padding: 15mm; margin: 20px auto; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.1); display: none; }
         .header-payout { text-align: center; border-bottom: 3px solid var(--dark); padding-bottom: 10px; margin-bottom: 20px; }
@@ -110,7 +129,7 @@
 
         <button class="btn-lock" onclick="lockSetup()">🔒 LOCK & OPEN STAFF PANEL</button>
         <button class="btn-close-event" onclick="showFinalReport()">📊 GENERATE FINAL REPORT</button>
-        <button onclick="resetSystem()" style="background: var(--primary-red); color: white; width: 100%; margin-top: 10px; font-size: 0.7rem;">⚠️ RESET SYSTEM</button>
+       <button class="btn-reset" onclick="resetSystem()">⚠️ RESET SYSTEM</button>
     </div>
 
     <div id="staffArea" class="staff-panel no-print">
