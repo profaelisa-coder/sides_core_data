@@ -217,7 +217,7 @@
     const tourney = { 
         event_id: currentEventID, 
         id: generatedID, 
-        t_name: name, // CORRIGIDO PARA t_name
+        t_name: name, 
         t_hour: hour, 
         t_day: day, 
         t_fee: fee, 
@@ -228,7 +228,7 @@
 
     if (error) {
         console.error("Erro:", error);
-        alert("Error: " + error.message); // Agora o alerta te diz o erro REAL
+        alert("Error: " + error.message); 
     } else {
         document.getElementById('tName').value = "";
         document.getElementById('tHour').value = "";
@@ -279,7 +279,7 @@
             });
             body.innerHTML += `<tr style="background:#f9f9f9; font-style:italic"><td>Participation</td><td>${partIndiv.toLocaleString()}</td></tr>`;
             document.getElementById('outEventName').innerText = document.getElementById('masterEvent').value;
-            document.getElementById('outTourneyName').innerText = t.name;
+            document.getElementById('outTourneyName').innerText = t.t_name;
             document.getElementById('outLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
             document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${rounds}`;
             document.getElementById('printArea').style.display = 'block';
@@ -324,11 +324,26 @@
         }
 
         async function loadHistoryFromCloud() {
-            const { data } = await _supabase.from('tournament_history').select('*').eq('event_id', currentEventID);
-            if (data) {
-                historyData = data.map(h => ({ id: h.tournament_id, name: h.tournament_name, schedule: h.schedule, players: h.players, rev: h.players * (h.entry_fee || 0), exp: h.players * (h.costs || 0), tickets: h.total_tickets }));
-            }
-        }
+    const { data, error } = await _supabase.from('tournament_history').select('*').eq('event_id', currentEventID);
+    
+    if (error) {
+        console.error("Erro ao carregar histórico:", error);
+        return;
+    }
+
+    if (data) {
+        historyData = data.map(h => ({ 
+            id: h.tournament_id, 
+            name: h.tournament_name, // Nome exato da coluna no banco
+            schedule: h.schedule, 
+            players: h.players, 
+            rev: h.players * (h.entry_fee || 0), 
+            exp: h.players * (h.costs || 0), 
+            tickets: h.total_tickets 
+        }));
+        console.log("Histórico carregado com sucesso!");
+    }
+}
     </script>
 </body>
 </html>
