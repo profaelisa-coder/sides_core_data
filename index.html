@@ -45,14 +45,19 @@
         </div>
     </div>
 
-    <div id="emailSetupArea" class="no-print" style="display:none; text-align:center; margin-top: 50px;">
-        <div class="admin-panel" style="width:450px; margin:auto;">
-            <h3>📧 COMMUNICATION SETUP</h3>
-            <div class="input-group"><label>TO Email</label><input type="email" id="toEmail" style="width:95%; margin-bottom:10px;"></div>
-            <div class="input-group"><label>Lead Email</label><input type="email" id="leadEmail" style="width:95%; margin-bottom:20px;"></div>
-            <button onclick="saveEmailsAndGo()" style="background:var(--green); color:white; width:95%;">START SETUP</button>
-        </div>
+    <div id="emailSetupArea" class="no-print" style="display:none; flex-direction:column; align-items:center; justify-content:center; margin-top: 50px;">
+    <div class="admin-panel" style="width:450px; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+        <h3 style="margin-top:0; text-align:center;">📧 COMMUNICATION SETUP</h3>
+        <div class="input-group"><label>TO Email</label><input type="email" id="toEmail" placeholder="organizer@email.com" style="width:95%; margin-bottom:15px;"></div>
+        <div class="input-group"><label>Lead Email</label><input type="email" id="leadEmail" placeholder="lead@email.com" style="width:95%; margin-bottom:20px;"></div>
+        <button onclick="saveEmailsAndGo()" style="background:var(--green); color:white; width:100%; padding: 15px; font-size: 1rem;">START SETUP</button>
+        
+        <p style="color: white; font-size: 0.8rem; margin-top: 20px; line-height: 1.4; text-align: center; opacity: 0.9;">
+            If you have already registered these emails in this session, <br>
+            simply click <strong>START SETUP</strong> to proceed.
+        </p>
     </div>
+</div>
 
     <div id="setupArea" class="admin-panel no-print" style="display: none;">
         <h3>🛡️ ADMIN SETUP <button onclick="location.reload()" style="font-size: 0.65rem; background: rgba(255,255,255,0.1); color: white; padding: 4px 10px; float: right;">EXIT</button></h3>
