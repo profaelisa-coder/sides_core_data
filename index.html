@@ -299,6 +299,7 @@
 		const fee = parseFloat(t.fee);
 		const cost = parseFloat(t.cost);
 		const netPoolCash = (players * fee) - (players * cost);
+		const maxTicketsAllowed = Math.round(netPoolCash * 10);
 
 	// O multiplicador padrão é 10 (1 dólar = 10 tickets)
 		const maxTicketsAllowed = Math.round(netPoolCash * 10);
