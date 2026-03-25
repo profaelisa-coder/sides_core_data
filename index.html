@@ -32,7 +32,9 @@
     <div id="login-area" class="no-print">
         <div class="login-card" style="background:white; padding:40px; border-radius:15px; text-align:center; width:350px; margin: 80px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
             <h2 style="color: var(--dark);">CORE PRIZE</h2>
-            <input type="text" id="event-id-input" placeholder="EVENT ID" autocomplete="new-password" spellcheck="false" style="width:100%; margin: 20px 0; text-transform: uppercase; padding:12px;">
+            <input type="password" id="event-id-input" placeholder="ENTER ACCESS CODE" 
+                   autocomplete="new-password" spellcheck="false" 
+                   style="width:100%; margin: 20px 0; text-transform: uppercase; padding:12px; letter-spacing: 4px; text-align: center;">
             <button onclick="checkAccess()" style="background: var(--dark); color: white; width: 100%;">Access System</button>
         </div>
     </div>
@@ -121,21 +123,34 @@
 
         async function checkAccess() {
             const idInput = document.getElementById('event-id-input');
-            const id = idInput.value.trim().toUpperCase();
-            if(!id) return;
-            if (id.endsWith('_LEAD')) {
-                currentEventID = id;
+            const rawId = idInput.value.trim().toUpperCase();
+            if(!rawId) return;
+
+            // REGRA LEAD: 3 Letras + 4 Números + _LEAD (CPS2026_LEAD)
+            const leadRegex = /^[A-Z]{3}\d{4}_LEAD$/;
+            // REGRA STAFF: 3 Letras + 2 Números (CPS26)
+            const staffRegex = /^[A-Z]{3}\d{2}$/;
+
+            if (leadRegex.test(rawId)) {
+                currentEventID = rawId;
                 document.getElementById('login-area').style.display='none';
                 document.getElementById('emailSetupArea').style.display='block';
-            } else {
-                const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', id+'_LEAD');
+            } else if (staffRegex.test(rawId)) {
+                const prefix = rawId.substring(0, 3); 
+                const yearShort = rawId.substring(3, 5); 
+                const searchID = prefix + "20" + yearShort + "_LEAD";
+
+                const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', searchID);
                 if(data && data.length > 0) {
-                    currentEventID = id+'_LEAD';
+                    currentEventID = searchID;
                     document.getElementById('login-area').style.display='none';
                     document.getElementById('staffArea').style.display='block';
                     loadTournaments();
-                } else alert("Access Denied.");
+                } else alert("ACCESS DENIED: Event not found.");
+            } else {
+                alert("FORMAT ERROR: Use XXX0000_LEAD or XXX00");
             }
+            idInput.value = "";
         }
 
         async function loadTournaments() {
@@ -183,8 +198,11 @@
             
             if(p < 4) return alert("Min 4 players");
 
-            const netFee = t.t_fee - t.t_cost;
-            const totalTicketsLimit = netFee * p * 10;
+            const fee = parseFloat(t.t_fee) || 0;
+            const cost = parseFloat(t.t_cost) || 0;
+            
+            // MATEMÁTICA CORRIGIDA TPCI (BS)
+            const totalTicketsLimit = Math.max(0, (fee - cost) * p * 10);
             const partIndiv = round10((totalTicketsLimit * tax) / p);
             const pool = totalTicketsLimit - (partIndiv * p);
             const payoutRank = getPayoutRank(p);
@@ -217,7 +235,7 @@
             document.getElementById('outEventName').innerText = document.getElementById('masterEvent').value;
             document.getElementById('outTourneyName').innerText = t.name;
             document.getElementById('outLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
-            document.getElementById('outDetails').innerText = `${t.t_date} | Players: ${p} | Fee: $${t.t_fee}`;
+            document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee}`;
             document.getElementById('printArea').style.display = 'block';
 
             historyData.push({name: t.name, players: p, rev: p*t.t_fee, exp: p*t.t_cost, tickets: currentTotal});
@@ -234,10 +252,19 @@
             window.print();
         }
 
+        function unlockSetup() {
+            const masterPass = currentEventID.replace('_LEAD', ''); 
+            if(prompt("ENTER MASTER PASSWORD:") === masterPass) {
+                document.getElementById('setupArea').style.display = 'block';
+                document.getElementById('staffArea').style.display = 'none';
+            } else {
+                alert("ACCESS DENIED");
+            }
+        }
+
         async function removeT(id) { if(confirm("Delete?")) { await _supabase.from('tournament_catalog').delete().eq('id', id); loadTournaments(); } }
         function saveEmailsAndGo() { document.getElementById('emailSetupArea').style.display='none'; document.getElementById('setupArea').style.display='block'; }
         function lockSetup() { document.getElementById('setupArea').style.display='none'; document.getElementById('staffArea').style.display='block'; }
-        function unlockSetup() { if(prompt("Pass:")==="1234") { document.getElementById('setupArea').style.display='block'; document.getElementById('staffArea').style.display='none'; }}
         function resetSystem() { if(confirm("RESET ALL?") && prompt("Type DELETE")==="DELETE") location.reload(); }
     </script>
 </body>
