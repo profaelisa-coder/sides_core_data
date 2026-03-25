@@ -70,7 +70,7 @@
         </div>
         <h4>📅 Tournament Catalog</h4>
         <div class="grid-inputs">
-            <input type="text" id="tName" placeholder="Name">
+            <input type="text" id="tName" placeholder="Name" autocomplete="off" spellcheck="false">
             <input type="text" id="tHour" placeholder="09:00">
             <select id="tDay"><option value="Day 1">Day 1</option><option value="Day 2">Day 2</option><option value="Day 3">Day 3</option></select>
             <input type="number" id="tFee" placeholder="Fee">
@@ -197,25 +197,44 @@
             if (select) select.innerHTML = '<option value="">Select Tournament...</option>'; 
             if (tbody) tbody.innerHTML = "";
             tournamentCatalog.forEach((t, i) => {
-                if (select) select.innerHTML += `<option value="${i}">${t.t_hour || ''} - ${t.name} (${t.t_day || ''})</option>`;
-                if (tbody) tbody.innerHTML += `<tr><td>${t.name} (${t.t_day || ''})</td><td><button onclick="removeT('${t.id}')">❌</button></td></tr>`;
+                if (select) select.innerHTML += `<option value="${i}">${t.t_hour || ''} - ${t.t_name} (${t.t_day || ''})</option>`;
+                if (tbody) tbody.innerHTML += `<tr><td>${t.t_name} (${t.t_day || ''})</td><td><button onclick="removeT('${t.id}')">❌</button></td></tr>`;
             });
             updateStaffFee();
         }
 
         async function addTournament() {
-            const name = document.getElementById('tName').value.trim();
-            const hour = document.getElementById('tHour').value.trim();
-            const day = document.getElementById('tDay').value;
-            const fee = parseFloat(document.getElementById('tFee').value) || 0;
-            const cost = parseFloat(document.getElementById('tCost').value) || 0;
-            if (!name) return alert("Enter Name");
-            const generatedID = (name + day + hour).toLowerCase().replace(/\s+/g, '');
-            const tourney = { event_id: currentEventID, id: generatedID, name: name, t_hour: hour, t_day: day, t_fee: fee, t_cost: cost };
-            const { error } = await _supabase.from('tournament_catalog').insert([tourney]);
-            if (error) alert("Error: Tournament already exists.");
-            else { document.getElementById('tName').value = ""; document.getElementById('tHour').value = ""; loadTournaments(); }
-        }
+    const name = document.getElementById('tName').value.trim();
+    const hour = document.getElementById('tHour').value.trim();
+    const day = document.getElementById('tDay').value;
+    const fee = parseFloat(document.getElementById('tFee').value) || 0;
+    const cost = parseFloat(document.getElementById('tCost').value) || 0;
+
+    if (!name) return alert("Enter Name");
+
+    const generatedID = (name + day + hour).toLowerCase().replace(/\s+/g, '');
+
+    const tourney = { 
+        event_id: currentEventID, 
+        id: generatedID, 
+        t_name: name, // CORRIGIDO PARA t_name
+        t_hour: hour, 
+        t_day: day, 
+        t_fee: fee, 
+        t_cost: cost 
+    };
+
+    const { error } = await _supabase.from('tournament_catalog').insert([tourney]);
+
+    if (error) {
+        console.error("Erro:", error);
+        alert("Error: " + error.message); // Agora o alerta te diz o erro REAL
+    } else {
+        document.getElementById('tName').value = "";
+        document.getElementById('tHour').value = "";
+        loadTournaments();
+    }
+}
 
         function updateStaffFee() {
             const val = document.getElementById('staffSelectTourney').value;
@@ -264,7 +283,7 @@
             document.getElementById('outLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
             document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${rounds}`;
             document.getElementById('printArea').style.display = 'block';
-            const newData = { id: t.id, name: t.name, schedule: `${t.t_day} - ${t.t_hour}`, players: p, rev: p * t.t_fee, exp: p * t.t_cost, tickets: currentTotal };
+            const newData = { id: t.id, name: t.t_name, schedule: `${t.t_day} - ${t.t_hour}`, players: p, rev: p * t.t_fee, exp: p * t.t_cost, tickets: currentTotal };
             const existingIndex = historyData.findIndex(h => h.id === t.id);
             if (existingIndex > -1) historyData[existingIndex] = newData; else historyData.push(newData);
             _supabase.from('tournament_history').upsert({
