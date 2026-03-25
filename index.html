@@ -40,16 +40,21 @@
     </div>
 
     <div id="emailSetupArea" class="no-print" style="display:none; text-align:center; margin-top: 50px;">
-        <div class="admin-panel" style="width:400px; margin:auto;">
+        <div class="admin-panel" style="width:450px; margin:auto;">
             <h3>📧 COMMUNICATION SETUP</h3>
-            <input type="email" id="toEmail" placeholder="TO Email" style="width:90%; margin-bottom:10px;">
-            <input type="email" id="leadEmail" placeholder="Lead Email" style="width:90%; margin-bottom:20px;">
-            <button onclick="saveEmailsAndGo()" style="background:var(--green); color:white; width:90%;">START SETUP</button>
+            <p style="font-size: 0.85rem; color: #555; margin-bottom: 20px; line-height: 1.4; background: #f9f9f9; padding: 12px; border-radius: 6px; border: 1px solid #eee; text-align: left;">
+                If you have already registered these emails in this session, <br>
+                simply click <strong>START SETUP</strong> to proceed.
+            </p>
+            <div class="input-group"><label>TO Email</label><input type="email" id="toEmail" placeholder="organizer@email.com" style="width:95%; margin-bottom:10px;"></div>
+            <div class="input-group"><label>Lead Email</label><input type="email" id="leadEmail" placeholder="lead@email.com" style="width:95%; margin-bottom:20px;"></div>
+            <button onclick="saveEmailsAndGo()" style="background:var(--green); color:white; width:95%;">START SETUP</button>
         </div>
     </div>
 
     <div id="setupArea" class="admin-panel no-print" style="display: none;">
-        <h3>🛡️ ADMIN SETUP <button onclick="location.reload()" style="font-size:0.6rem; background:none; color:white; border:1px solid white; margin-left:10px; vertical-align:middle; cursor:pointer;">EXIT</button></h3>
+        <h3>🛡️ ADMIN SETUP <button onclick="location.reload()" style="font-size: 0.65rem; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 4px; padding: 4px 10px; cursor: pointer; float: right;">EXIT SYSTEM</button></h3>
+        
         <div class="grid-inputs">
             <div class="input-group"><label>Event Name</label><input type="text" id="masterEvent" autocomplete="off" spellcheck="false"></div>
             <div class="input-group"><label>Logo</label><select id="masterLogo"><option value="REGIONAL">REGIONAL</option><option value="IC">IC</option></select></div>
@@ -110,6 +115,17 @@
             <thead><tr><th>Tournament</th><th>Players</th><th>Revenue</th><th>Expense</th><th>Tickets</th></tr></thead>
             <tbody id="reportTableBody"></tbody>
         </table>
+    </div>
+
+    <div id="modalSenha" class="no-print" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:white; padding:30px; border-radius:12px; text-align:center; width:300px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <h4 style="color:var(--dark); margin-top:0;">ENTER MASTER PASSWORD</h4>
+            <input type="password" id="inputSenhaRetorno" style="width:100%; padding:12px; margin-bottom:15px; text-align:center; letter-spacing:4px; font-size:1.2rem; border:1px solid #ccc; border-radius:8px;">
+            <div style="display:flex; gap:10px;">
+                <button onclick="confirmarRetorno()" style="flex:1; background:var(--dark); color:white; padding:10px; cursor:pointer;">OK</button>
+                <button onclick="fecharModal()" style="flex:1; background:#ccc; color:black; padding:10px; cursor:pointer;">CANCEL</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -251,17 +267,33 @@
         }
 
         function unlockSetup() {
+            document.getElementById('modalSenha').style.display = 'flex';
+            document.getElementById('inputSenhaRetorno').focus();
+        }
+
+        function fecharModal() {
+            document.getElementById('modalSenha').style.display = 'none';
+            document.getElementById('inputSenhaRetorno').value = '';
+        }
+
+        function confirmarRetorno() {
             const masterPass = currentEventID.replace('_LEAD', ''); 
-            const pass = prompt("ENTER MASTER PASSWORD:");
-            if(pass === masterPass) {
+            const digitado = document.getElementById('inputSenhaRetorno').value.toUpperCase();
+            
+            if(digitado === masterPass) {
                 document.getElementById('setupArea').style.display = 'block';
                 document.getElementById('staffArea').style.display = 'none';
-            } else if (pass !== null) alert("ACCESS DENIED");
+                fecharModal();
+            } else {
+                alert("ACCESS DENIED");
+                document.getElementById('inputSenhaRetorno').value = '';
+            }
         }
 
         async function removeT(id) { if(confirm("Delete?")) { await _supabase.from('tournament_catalog').delete().eq('id', id); loadTournaments(); } }
         function lockSetup() { document.getElementById('setupArea').style.display='none'; document.getElementById('staffArea').style.display='block'; }
         function resetSystem() { if(confirm("RESET ALL?") && prompt("Type DELETE")==="DELETE") location.reload(); }
+        
         function showFinalReport() {
             const tbody = document.getElementById('reportTableBody'); tbody.innerHTML = "";
             historyData.forEach(h => {
