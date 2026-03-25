@@ -295,8 +295,13 @@
             }
 
             // 1. CÁLCULO DO LIMITE MÁXIMO (Custo Material subtraído antes de tudo)
-            const netPoolCash = (players * t.fee) - (players * t.cost);
-            const maxTicketsAllowed = Math.floor(netPoolCash * 10);
+            // Garante que estamos usando números decimais corretos
+		const fee = parseFloat(t.fee);
+		const cost = parseFloat(t.cost);
+		const netPoolCash = (players * fee) - (players * cost);
+
+	// O multiplicador padrão é 10 (1 dólar = 10 tickets)
+		const maxTicketsAllowed = Math.round(netPoolCash * 10);
 
             // 2. PRÊMIO DE PARTICIPAÇÃO (O valor "Participation %" dividido por todos)
             const participationPool = (netPoolCash * (participationPercent / 100)) * 10;
