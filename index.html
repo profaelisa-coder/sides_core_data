@@ -352,7 +352,21 @@
             document.getElementById('printArea').classList.remove('no-print');
             document.getElementById('reportArea').classList.add('no-print');
 
-            historyData.push({name: t.name, players: p, rev: p*t.t_fee, exp: p*t.t_cost, tickets: currentTotal});
+           const existingIndex = historyData.findIndex(h => h.name === t.name);
+            
+            const newData = {
+                name: t.name, 
+                players: p, 
+                rev: p * t.t_fee, 
+                exp: p * t.t_cost, 
+                tickets: currentTotal
+            };
+
+            if (existingIndex > -1) {
+                historyData[existingIndex] = newData;
+            } else {
+                historyData.push(newData);
+            }
         }
 
         function unlockSetup() {
