@@ -46,18 +46,19 @@
     </div>
 
     <div id="emailSetupArea" class="no-print" style="display:none; flex-direction:column; align-items:center; justify-content:center; margin-top: 50px;">
-    <div class="admin-panel" style="width:450px; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
-        <h3 style="margin-top:0; text-align:center;">📧 COMMUNICATION SETUP</h3>
-        <div class="input-group"><label>TO Email</label><input type="email" id="toEmail" placeholder="organizer@email.com" style="width:95%; margin-bottom:15px;"></div>
-        <div class="input-group"><label>Lead Email</label><input type="email" id="leadEmail" placeholder="lead@email.com" style="width:95%; margin-bottom:20px;"></div>
-        <button onclick="saveEmailsAndGo()" style="background:var(--green); color:white; width:100%; padding: 15px; font-size: 1rem;">START SETUP</button>
-        
-        <p style="color: white; font-size: 0.8rem; margin-top: 20px; line-height: 1.4; text-align: center; opacity: 0.9;">
-            If you have already registered these emails in this session, <br>
-            simply click <strong>START SETUP</strong> to proceed.
-        </p>
+        <div class="admin-panel" style="width:450px; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-bottom: 5px solid var(--green);">
+            <h3 style="margin-top:0; text-align:center; letter-spacing: 1px;">📧 COMMUNICATION SETUP</h3>
+            <div style="margin-top: 25px;">
+                <div class="input-group"><label style="color:var(--gold)">TO Email</label><input type="email" id="toEmail" placeholder="organizer@email.com" style="width:96%; margin-bottom:15px; padding:12px;"></div>
+                <div class="input-group"><label style="color:var(--gold)">Lead Email</label><input type="email" id="leadEmail" placeholder="lead@email.com" style="width:96%; margin-bottom:25px; padding:12px;"></div>
+            </div>
+            <button onclick="saveEmailsAndGo()" style="background:var(--green); color:white; width:100%; padding: 18px; font-size: 1.1rem; border-radius: 8px; box-shadow: 0 4px 0 #1e7066;">START SETUP</button>
+            <p style="color: white; font-size: 0.85rem; margin-top: 30px; line-height: 1.5; text-align: center; font-style: italic; opacity: 0.9; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                If you have already registered these emails in this session, <br>
+                simply click <strong>START SETUP</strong> to proceed.
+            </p>
+        </div>
     </div>
-</div>
 
     <div id="setupArea" class="admin-panel no-print" style="display: none;">
         <h3>🛡️ ADMIN SETUP <button onclick="location.reload()" style="font-size: 0.65rem; background: rgba(255,255,255,0.1); color: white; padding: 4px 10px; float: right;">EXIT</button></h3>
@@ -193,39 +194,28 @@
             tournamentCatalog = data || [];
             const select = document.getElementById('staffSelectTourney');
             const tbody = document.querySelector('#catalogTable tbody');
-            select.innerHTML = '<option value="">Select Tournament...</option>'; 
-            tbody.innerHTML = "";
+            if (select) select.innerHTML = '<option value="">Select Tournament...</option>'; 
+            if (tbody) tbody.innerHTML = "";
             tournamentCatalog.forEach((t, i) => {
-                select.innerHTML += `<option value="${i}">${t.hour} - ${t.name} (${t.day})</option>`;
-                tbody.innerHTML += `<tr><td>${t.name} (${t.day})</td><td><button onclick="removeT('${t.id}')">❌</button></td></tr>`;
+                if (select) select.innerHTML += `<option value="${i}">${t.t_hour || ''} - ${t.name} (${t.t_day || ''})</option>`;
+                if (tbody) tbody.innerHTML += `<tr><td>${t.name} (${t.t_day || ''})</td><td><button onclick="removeT('${t.id}')">❌</button></td></tr>`;
             });
             updateStaffFee();
         }
 
-       async function addTournament() {
-    const name = document.getElementById('tName').value.trim();
-    const hour = document.getElementById('tHour').value.trim();
-    const day = document.getElementById('tDay').value;
-    const fee = parseFloat(document.getElementById('tFee').value) || 0;
-    const cost = parseFloat(document.getElementById('tCost').value) || 0;
-
-    if (!name) return alert("Enter Name");
-
-    tournamentCatalog = []; 
-
-    const generatedID = (name + day + hour).toLowerCase().replace(/\s+/g, '');
-    const tourney = { event_id: currentEventID, id: generatedID, name: name, hour: hour, day: day, t_fee: fee, t_cost: cost };
-    
-    const { error } = await _supabase.from('tournament_catalog').insert([tourney]);
-    
-    if (error) {
-        alert("Error: Tournament already exists.");
-    } else { 
-        document.getElementById('tName').value = ""; 
-        document.getElementById('tHour').value = ""; 
-        loadTournaments(); 
-    }
-}
+        async function addTournament() {
+            const name = document.getElementById('tName').value.trim();
+            const hour = document.getElementById('tHour').value.trim();
+            const day = document.getElementById('tDay').value;
+            const fee = parseFloat(document.getElementById('tFee').value) || 0;
+            const cost = parseFloat(document.getElementById('tCost').value) || 0;
+            if (!name) return alert("Enter Name");
+            const generatedID = (name + day + hour).toLowerCase().replace(/\s+/g, '');
+            const tourney = { event_id: currentEventID, id: generatedID, name: name, t_hour: hour, t_day: day, t_fee: fee, t_cost: cost };
+            const { error } = await _supabase.from('tournament_catalog').insert([tourney]);
+            if (error) alert("Error: Tournament already exists.");
+            else { document.getElementById('tName').value = ""; document.getElementById('tHour').value = ""; loadTournaments(); }
+        }
 
         function updateStaffFee() {
             const val = document.getElementById('staffSelectTourney').value;
@@ -246,12 +236,10 @@
             const factor = parseFloat(document.getElementById('masterFactor').value);
             const tax = (parseFloat(document.getElementById('masterTax').value) || 0) / 100;
             if(p < 4) return alert("Min 4 players");
-
             const totalTicketsLimit = Math.max(0, (t.t_fee - t.t_cost) * p * 10);
             const partIndiv = round10((totalTicketsLimit * tax) / p);
             const pool = totalTicketsLimit - (partIndiv * p);
             const payoutRank = getPayoutRank(p);
-
             let rounds = p >= 227 ? 9 : p >= 129 ? 8 : p >= 65 ? 7 : p >= 33 ? 6 : p >= 9 ? 4 : 3;
             let tiers = [];
             if (payoutRank >= 1) tiers.push({name: "1st Place", count: 1});
@@ -260,7 +248,6 @@
             if (payoutRank >= 8) tiers.push({name: "5th - 8th", count: 4});
             if (payoutRank >= 16) tiers.push({name: "9th - 16th", count: 8});
             if (payoutRank >= 32) tiers.push({name: "17th - 32nd", count: 16});
-
             let totalW = 0;
             tiers.forEach((tier, i) => { tier.weight = Math.pow(factor, (tiers.length - 1) - i); totalW += (tier.weight * tier.count); });
             const unit = pool / totalW;
@@ -272,19 +259,16 @@
                 currentTotal += (round10(unit * tier.weight) * tier.count);
             });
             body.innerHTML += `<tr style="background:#f9f9f9; font-style:italic"><td>Participation</td><td>${partIndiv.toLocaleString()}</td></tr>`;
-
             document.getElementById('outEventName').innerText = document.getElementById('masterEvent').value;
             document.getElementById('outTourneyName').innerText = t.name;
             document.getElementById('outLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
             document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${rounds}`;
             document.getElementById('printArea').style.display = 'block';
-
-            const newData = { id: t.id, name: t.name, schedule: `${t.day} - ${t.hour}`, players: p, rev: p * t.t_fee, exp: p * t.t_cost, tickets: currentTotal };
+            const newData = { id: t.id, name: t.name, schedule: `${t.t_day} - ${t.t_hour}`, players: p, rev: p * t.t_fee, exp: p * t.t_cost, tickets: currentTotal };
             const existingIndex = historyData.findIndex(h => h.id === t.id);
             if (existingIndex > -1) historyData[existingIndex] = newData; else historyData.push(newData);
-
             _supabase.from('tournament_history').upsert({
-                event_id: currentEventID, tournament_id: t.id, tournament_name: t.name, schedule: `${t.day} - ${t.hour}`, 
+                event_id: currentEventID, tournament_id: t.id, tournament_name: t.name, schedule: `${t.t_day} - ${t.t_hour}`, 
                 players: p, entry_fee: t.t_fee, costs: t.t_cost, total_tickets: currentTotal
             }, { onConflict: 'event_id, tournament_id' }).then(({ error }) => { if(!error) console.log("Saved!"); });
         }
@@ -323,7 +307,7 @@
         async function loadHistoryFromCloud() {
             const { data } = await _supabase.from('tournament_history').select('*').eq('event_id', currentEventID);
             if (data) {
-                historyData = data.map(h => ({ id: h.tournament_id, name: h.tournament_name, schedule: h.schedule, players: h.players, rev: h.players * h.entry_fee, exp: h.players * h.costs, tickets: h.total_tickets }));
+                historyData = data.map(h => ({ id: h.tournament_id, name: h.tournament_name, schedule: h.schedule, players: h.players, rev: h.players * (h.entry_fee || 0), exp: h.players * (h.costs || 0), tickets: h.total_tickets }));
             }
         }
     </script>
