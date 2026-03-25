@@ -49,11 +49,11 @@
     </div>
 
     <div id="setupArea" class="admin-panel no-print" style="display: none;">
-        <h3>🛡️ ADMIN SETUP</h3>
+        <h3>🛡️ ADMIN SETUP <button onclick="location.reload()" style="font-size:0.6rem; background:none; color:white; border:1px solid white; margin-left:10px; vertical-align:middle; cursor:pointer;">EXIT</button></h3>
         <div class="grid-inputs">
-            <div class="input-group"><label>Event Name</label><input type="text" id="masterEvent"></div>
+            <div class="input-group"><label>Event Name</label><input type="text" id="masterEvent" autocomplete="off" spellcheck="false"></div>
             <div class="input-group"><label>Logo</label><select id="masterLogo"><option value="REGIONAL">REGIONAL</option><option value="IC">IC</option></select></div>
-            <div class="input-group"><label>Part. %</label><input type="number" id="masterTax" value="20"></div>
+            <div class="input-group"><label>Part. %</label><input type="number" id="masterTax" value="20" autocomplete="off"></div>
             <div class="input-group"><label>Spread Factor</label>
                 <select id="masterFactor">
                     <option value="2.0">2.0 (Aggressive)</option>
@@ -64,11 +64,11 @@
         </div>
         <h4>📅 Tournament Catalog</h4>
         <div class="grid-inputs">
-            <div class="input-group"><label>Name</label><input type="text" id="tName"></div>
-            <div class="input-group"><label>Hour</label><input type="text" id="tHour"></div>
+            <div class="input-group"><label>Name</label><input type="text" id="tName" autocomplete="off" spellcheck="false"></div>
+            <div class="input-group"><label>Hour</label><input type="text" id="tHour" autocomplete="off" spellcheck="false"></div>
             <div class="input-group"><label>Day</label><select id="tDay"><option value="Day 1">Day 1</option><option value="Day 2">Day 2</option><option value="Day 3">Day 3</option></select></div>
-            <div class="input-group"><label>Fee</label><input type="number" id="tFee"></div>
-            <div class="input-group"><label>Cost</label><input type="number" id="tCost"></div>
+            <div class="input-group"><label>Fee</label><input type="number" id="tFee" autocomplete="off"></div>
+            <div class="input-group"><label>Cost</label><input type="number" id="tCost" autocomplete="off"></div>
             <button onclick="addTournament()" style="background:var(--gold); height:42px;">+ ADD</button>
         </div>
         <table class="tourney-list" id="catalogTable"><tbody></tbody></table>
@@ -79,10 +79,10 @@
     </div>
 
     <div id="staffArea" class="staff-panel no-print">
-        <h3>🕹️ STAFF OPERATION <button onclick="unlockSetup()" style="font-size:0.6rem">Back</button></h3>
+        <h3>🕹️ STAFF OPERATION <button onclick="unlockSetup()" style="font-size:0.6rem; padding: 5px; float: right; cursor:pointer;">Back</button></h3>
         <select id="staffSelectTourney" onchange="updateStaffFee()" style="width:100%; margin-bottom:10px; padding:10px;"></select>
         <div style="display:flex; gap:10px;">
-            <div class="input-group" style="flex:1"><label>Players</label><input type="number" id="staffPlayers" value="0"></div>
+            <div class="input-group" style="flex:1"><label>Players</label><input type="number" id="staffPlayers" value="0" autocomplete="off"></div>
             <div class="input-group" style="flex:1"><label>Fee</label><input type="number" id="staffFee" disabled></div>
         </div>
         <button class="btn-update" onclick="generatePayout()" style="width:100%; margin-top:15px; padding:15px;">UPDATE VIEW</button>
@@ -120,21 +120,25 @@
         let tournamentCatalog = [];
         let currentEventID = '';
         let historyData = [];
+        let emailsConfigured = false;
 
         async function checkAccess() {
             const idInput = document.getElementById('event-id-input');
             const rawId = idInput.value.trim().toUpperCase();
             if(!rawId) return;
 
-            // REGRA LEAD: 3 Letras + 4 Números + _LEAD
             const leadRegex = /^[A-Z]{3}\d{4}_LEAD$/;
-            // REGRA STAFF: 3 Letras + 2 Números
             const staffRegex = /^[A-Z]{3}\d{2}$/;
 
             if (leadRegex.test(rawId)) {
                 currentEventID = rawId;
                 document.getElementById('login-area').style.display='none';
-                document.getElementById('emailSetupArea').style.display='block';
+                if (!emailsConfigured) {
+                    document.getElementById('emailSetupArea').style.display='flex';
+                } else {
+                    document.getElementById('setupArea').style.display='block';
+                    loadTournaments();
+                }
             } else if (staffRegex.test(rawId)) {
                 const prefix = rawId.substring(0, 3); 
                 const yearShort = rawId.substring(3, 5); 
@@ -153,6 +157,13 @@
             idInput.value = "";
         }
 
+        function saveEmailsAndGo() {
+            emailsConfigured = true;
+            document.getElementById('emailSetupArea').style.display='none';
+            document.getElementById('setupArea').style.display='block';
+            loadTournaments();
+        }
+
         async function loadTournaments() {
             const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
             tournamentCatalog = data || [];
@@ -167,12 +178,16 @@
         }
 
         async function addTournament() {
+            const name = document.getElementById('tName').value;
+            const fee = parseFloat(document.getElementById('tFee').value);
+            if(!name || isNaN(fee)) return alert("Name and Fee required!");
+            
             const t = {
                 event_id: currentEventID,
-                name: document.getElementById('tName').value,
+                name: name,
                 t_date: document.getElementById('tDay').value,
                 t_hour: document.getElementById('tHour').value,
-                t_fee: parseFloat(document.getElementById('tFee').value),
+                t_fee: fee,
                 t_cost: parseFloat(document.getElementById('tCost').value) || 0
             };
             await _supabase.from('tournament_catalog').insert([t]);
@@ -195,13 +210,10 @@
             const p = parseInt(document.getElementById('staffPlayers').value) || 0;
             const factor = parseFloat(document.getElementById('masterFactor').value);
             const tax = (parseFloat(document.getElementById('masterTax').value) || 0) / 100;
-            
             if(p < 4) return alert("Min 4 players");
 
             const fee = parseFloat(t.t_fee) || 0;
             const cost = parseFloat(t.t_cost) || 0;
-            
-            // MATEMÁTICA CORRIGIDA TPCI (BS) - PRIORIDADE FEE-COST
             const totalTicketsLimit = Math.max(0, (fee - cost) * p * 10);
             const partIndiv = round10((totalTicketsLimit * tax) / p);
             const pool = totalTicketsLimit - (partIndiv * p);
@@ -220,14 +232,12 @@
                 tiers[i].weight = Math.pow(factor, (tiers.length - 1) - i);
                 totalW += (tiers[i].weight * tiers[i].count);
             }
-
             const unit = pool / totalW;
-            let currentTotal = partIndiv * p;
+            let currentTotal = (partIndiv * p);
             const body = document.getElementById('payoutBody'); body.innerHTML = "";
-
             for (let i = 0; i < tiers.length; i++) {
                 let prize = round10(unit * tiers[i].weight) + partIndiv;
-                body.innerHTML += `<tr><td style="padding:10px">${tiers[i].name}</td><td style="font-weight:bold">${prize.toLocaleString()}</td></tr>`;
+                body.innerHTML += `<tr><td>${tiers[i].name}</td><td style="font-weight:bold">${prize.toLocaleString()}</td></tr>`;
                 currentTotal += (round10(unit * tiers[i].weight) * tiers[i].count);
             }
             body.innerHTML += `<tr style="background:#f9f9f9; font-style:italic"><td>Participation</td><td>${partIndiv.toLocaleString()}</td></tr>`;
@@ -235,12 +245,23 @@
             document.getElementById('outEventName').innerText = document.getElementById('masterEvent').value;
             document.getElementById('outTourneyName').innerText = t.name;
             document.getElementById('outLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
-            document.getElementById('outDetails').innerText = `Players: ${p} | Entry: $${fee} | Cost: $${cost}`;
+            document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee}`;
             document.getElementById('printArea').style.display = 'block';
-
-            historyData.push({name: t.name, players: p, rev: p*fee, exp: p*cost, tickets: currentTotal});
+            historyData.push({name: t.name, players: p, rev: p*t.t_fee, exp: p*t.t_cost, tickets: currentTotal});
         }
 
+        function unlockSetup() {
+            const masterPass = currentEventID.replace('_LEAD', ''); 
+            const pass = prompt("ENTER MASTER PASSWORD:");
+            if(pass === masterPass) {
+                document.getElementById('setupArea').style.display = 'block';
+                document.getElementById('staffArea').style.display = 'none';
+            } else if (pass !== null) alert("ACCESS DENIED");
+        }
+
+        async function removeT(id) { if(confirm("Delete?")) { await _supabase.from('tournament_catalog').delete().eq('id', id); loadTournaments(); } }
+        function lockSetup() { document.getElementById('setupArea').style.display='none'; document.getElementById('staffArea').style.display='block'; }
+        function resetSystem() { if(confirm("RESET ALL?") && prompt("Type DELETE")==="DELETE") location.reload(); }
         function showFinalReport() {
             const tbody = document.getElementById('reportTableBody'); tbody.innerHTML = "";
             historyData.forEach(h => {
@@ -251,21 +272,6 @@
             document.getElementById('printArea').style.display = 'none';
             window.print();
         }
-
-        function unlockSetup() {
-            const masterPass = currentEventID.replace('_LEAD', ''); 
-            if(prompt("ENTER MASTER PASSWORD:") === masterPass) {
-                document.getElementById('setupArea').style.display = 'block';
-                document.getElementById('staffArea').style.display = 'none';
-            } else {
-                alert("ACCESS DENIED");
-            }
-        }
-
-        async function removeT(id) { if(confirm("Delete?")) { await _supabase.from('tournament_catalog').delete().eq('id', id); loadTournaments(); } }
-        function saveEmailsAndGo() { document.getElementById('emailSetupArea').style.display='none'; document.getElementById('setupArea').style.display='block'; }
-        function lockSetup() { document.getElementById('setupArea').style.display='none'; document.getElementById('staffArea').style.display='block'; }
-        function resetSystem() { if(confirm("RESET ALL?") && prompt("Type DELETE")==="DELETE") location.reload(); }
     </script>
 </body>
 </html>
