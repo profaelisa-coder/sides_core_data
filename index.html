@@ -23,7 +23,6 @@
         
         .btn-add { background: var(--gold); color: #1d3557; height: 42px; align-self: flex-end; }
         
-        /* Botões de Operação e Relatório (Verde Azulado) */
         .btn-lock, .btn-close-event { 
             background: #1a7a7a; 
             color: white; 
@@ -36,7 +35,6 @@
         .btn-update { background: var(--primary-red); color: white; }
         .btn-print { background: var(--dark); color: white; }
 
-        /* Botão de Reset (Fundo Laranja +ADD com fonte escura) */
         .btn-reset { 
             background: var(--gold); 
             color: #1d3557; 
@@ -129,7 +127,7 @@
 
         <button class="btn-lock" onclick="lockSetup()">🔒 LOCK & OPEN STAFF PANEL</button>
         <button class="btn-close-event" onclick="showFinalReport()">📊 GENERATE FINAL REPORT</button>
-       <button class="btn-reset" onclick="resetSystem()">⚠️ RESET SYSTEM</button>
+        <button class="btn-reset" onclick="resetSystem()">⚠️ RESET SYSTEM</button>
     </div>
 
     <div id="staffArea" class="staff-panel no-print">
@@ -269,136 +267,92 @@
         }
 
         function updateStaffFee() {
-            const t = tournamentCatalog[document.getElementById('staffSelectTourney').value];
-            if(t) document.getElementById('staffFee').value = t.fee;
+            const select = document.getElementById('staffSelectTourney');
+            const index = select.value;
+            if(index !== "") {
+                const t = tournamentCatalog[index];
+                document.getElementById('staffFee').value = t.fee;
+            }
         }
 
         function resetSystem() {
             if(confirm("DELETE EVERYTHING?") && prompt("Type DELETE:") === "DELETE") location.reload();
         }
 
-        // A lógica matemática do Payout entrará aqui no próximo passo!
-// --- MOTOR MATEMÁTICO V3.0 (PADRÃO TPCI) ---
-        
         function calculatePrizeTickets() {
             const index = document.getElementById('staffSelectTourney').value;
+            if (index === "") return null;
+            
             const t = tournamentCatalog[index];
             const players = parseInt(document.getElementById('staffPlayers').value) || 0;
-            
-            // Pega as variáveis do Setup do Lead
-            const participationPercent = parseFloat(document.getElementById('masterTax').value) || 20;
+            const tax = parseFloat(document.getElementById('masterTax').value) || 20;
             const factor = parseFloat(document.getElementById('masterFactor').value) || 1.75;
 
-            if (!t || players < 4) {
-                alert("Please select a tournament and enter at least 4 players!");
-                return null;
-            }
+            if (players < 4) return null;
 
-            // 1. CÁLCULO DO LIMITE MÁXIMO (Custo Material subtraído antes de tudo)
-            // Garante que estamos usando números decimais corretos
-		const fee = parseFloat(t.fee);
-		const cost = parseFloat(t.cost);
-		const netPoolCash = (players * fee) - (players * cost);
-		const maxTicketsAllowed = Math.round(netPoolCash * 10);
+            const fee = parseFloat(t.fee);
+            const cost = parseFloat(t.cost);
+            const netPoolCash = (players * fee) - (players * cost);
+            const maxTicketsAllowed = Math.floor(netPoolCash * 10);
 
-	// O multiplicador padrão é 10 (1 dólar = 10 tickets)
-		const maxTicketsAllowed = Math.round(netPoolCash * 10);
+            const partPool = maxTicketsAllowed * (tax / 100);
+            const partEach = Math.floor((partPool / players) / 10) * 10;
+            const totalPart = partEach * players;
 
-            // 2. PRÊMIO DE PARTICIPAÇÃO (O valor "Participation %" dividido por todos)
-            const participationPool = (netPoolCash * (participationPercent / 100)) * 10;
-            const participationEach = Math.floor((participationPool / players) / 10) * 10; 
-            const totalParticipationDistributed = participationEach * players;
+            const rankingPool = maxTicketsAllowed - totalPart;
 
-            // 3. POTE DE RANKING (O que sobra para o Top)
-            const rankingPool = maxTicketsAllowed - totalParticipationDistributed;
+            let topRank = 2; 
+            if (players >= 9) topRank = 4;
+            if (players >= 17) topRank = 8;
+            if (players >= 33) topRank = 16;
+            if (players >= 65) topRank = 32;
 
-            // 4. TABELA OFICIAL TPCI (Cortes de Rank e Rodadas)
-            let topRank = 2; let rounds = 3;
-            if (players >= 9 && players <= 16) { topRank = 4; rounds = 4; }
-            else if (players >= 17 && players <= 32) { topRank = 8; rounds = 5; }
-            else if (players >= 33 && players <= 64) { topRank = 16; rounds = 6; }
-            else if (players >= 65 && players <= 128) { topRank = 32; rounds = 7; }
-            else if (players >= 129 && players <= 226) { topRank = 64; rounds = 8; }
-            else if (players >= 227) { topRank = 128; rounds = 9; }
-
-            // 5. DISTRIBUIÇÃO CURVA (Spread Factor)
-            let weights = [];
-            let sumWeights = 0;
+            let weights = []; let sumWeights = 0;
             for (let i = 0; i < topRank; i++) {
                 let w = Math.pow(topRank - i, factor);
-                weights.push(w);
-                sumWeights += w;
+                weights.push(w); sumWeights += w;
             }
 
-            // Calcula prêmios brutos e arredonda de 10 em 10
             let finalPayouts = weights.map(w => Math.round(((w / sumWeights) * rankingPool) / 10) * 10);
-
-            // 6. TRAVA DE SEGURANÇA (Diferença tirada do 1º e 2º lugar se estourar o limite)
-            let currentTotal = finalPayouts.reduce((a, b) => a + b, 0) + totalParticipationDistributed;
+            
+            let currentTotal = finalPayouts.reduce((a, b) => a + b, 0) + totalPart;
             let diff = currentTotal - maxTicketsAllowed;
-
             if (diff > 0) {
                 const halfDiff = Math.ceil((diff / 2) / 10) * 10;
                 finalPayouts[0] -= halfDiff;
                 finalPayouts[1] -= (diff - halfDiff);
             }
 
-            return {
-                tournament: t,
-                players: players,
-                rounds: rounds,
-                participation: participationEach,
-                topRank: topRank,
-                payouts: finalPayouts
-            };
+            return { tournament: t, players, participation: partEach, topRank, payouts: finalPayouts };
         }
 
         function generatePayout() {
             const res = calculatePrizeTickets();
-            if (!res) return;
+            if (!res) return alert("Select tournament and min 4 players!");
 
-            // Preenche o Cabeçalho do PDF (SUN4 Style)
             document.getElementById('outEventName').innerText = document.getElementById('masterEvent').value;
             document.getElementById('outTourneyName').innerText = res.tournament.name;
-            document.getElementById('outDetails').innerText = 
-                `${res.tournament.day.toUpperCase()} - ${res.tournament.hour} | Players: ${res.players} | Rounds: ${res.rounds}`;
+            document.getElementById('outDetails').innerText = `${res.tournament.day.toUpperCase()} - ${res.tournament.hour} | Players: ${res.players}`;
 
-            // Preenche a Tabela de Ranks agrupando (1st, 2nd, 3rd-4th...)
             const tbody = document.getElementById('payoutBody');
             tbody.innerHTML = "";
-
-            const labels = ["1st Place", "2nd Place", "3rd - 4th", "5th - 8th", "9th - 16th", "17th - 32nd", "33rd - 64th", "65th - 128th"];
-            const steps = [1, 1, 2, 4, 8, 16, 32, 64]; // Quantos jogadores em cada grupo
+            const labels = ["1st Place", "2nd Place", "3rd - 4th", "5th - 8th", "9th - 16th", "17th - 32nd"];
+            const steps = [1, 1, 2, 4, 8, 16];
             
             let currentIdx = 0;
             for (let i = 0; i < steps.length; i++) {
                 if (currentIdx >= res.topRank) break;
-                
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="rank-col">${labels[i]}</td>
-                        <td>${res.payouts[currentIdx].toLocaleString()}</td>
-                    </tr>`;
+                tbody.innerHTML += `<tr><td class="rank-col">${labels[i]}</td><td>${res.payouts[currentIdx].toLocaleString()}</td></tr>`;
                 currentIdx += steps[i];
             }
-
-            // Linha Final de Participação
-            const partRankLabel = res.topRank === 2 ? "3rd" : (res.topRank === 4 ? "5th" : (res.topRank === 8 ? "9th" : (res.topRank === 16 ? "17th" : "33rd")));
-            tbody.innerHTML += `
-                <tr style="background: #f9f9f9; font-weight: bold;">
-                    <td class="rank-col">${partRankLabel}+ (Participation)</td>
-                    <td>${res.participation.toLocaleString()}</td>
-                </tr>`;
-
-            // Mostra a área de impressão
+            
+            const partRankLabel = res.topRank === 2 ? "3rd" : (res.topRank === 4 ? "5th" : (res.topRank === 8 ? "9th" : "17th"));
+            tbody.innerHTML += `<tr style="background:#f9f9f9;font-weight:bold;"><td class="rank-col">${partRankLabel}+ (Participation)</td><td>${res.participation.toLocaleString()}</td></tr>`;
             document.getElementById('printArea').style.display = 'block';
             window.scrollTo(0, document.body.scrollHeight);
         }
 
-        // Função vazia para não dar erro no botão enquanto não fazemos o reporte consolidado
-        function showFinalReport() {
-            alert("Generating Final Report... (Next Update)");
-        }
+        function showFinalReport() { alert("Report logic coming soon!"); }
     </script>
 </body>
 </html>
