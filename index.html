@@ -34,7 +34,7 @@
             <h2 style="color: var(--dark);">CORE PRIZE</h2>
             <input type="password" id="event-id-input" placeholder="ENTER ACCESS CODE" 
                    autocomplete="new-password" spellcheck="false" 
-                   style="width:100%; margin: 20px 0; text-transform: uppercase; padding:12px; letter-spacing: 4px; text-align: center;">
+                   style="width:100%; margin: 20px 0; text-transform: uppercase; padding:12px; letter-spacing: 4px; text-align: center; border: 1px solid #ddd; border-radius: 8px;">
             <button onclick="checkAccess()" style="background: var(--dark); color: white; width: 100%;">Access System</button>
         </div>
     </div>
@@ -126,9 +126,9 @@
             const rawId = idInput.value.trim().toUpperCase();
             if(!rawId) return;
 
-            // REGRA LEAD: 3 Letras + 4 Números + _LEAD (CPS2026_LEAD)
+            // REGRA LEAD: 3 Letras + 4 Números + _LEAD
             const leadRegex = /^[A-Z]{3}\d{4}_LEAD$/;
-            // REGRA STAFF: 3 Letras + 2 Números (CPS26)
+            // REGRA STAFF: 3 Letras + 2 Números
             const staffRegex = /^[A-Z]{3}\d{2}$/;
 
             if (leadRegex.test(rawId)) {
@@ -201,7 +201,7 @@
             const fee = parseFloat(t.t_fee) || 0;
             const cost = parseFloat(t.t_cost) || 0;
             
-            // MATEMÁTICA CORRIGIDA TPCI (BS)
+            // MATEMÁTICA CORRIGIDA TPCI (BS) - PRIORIDADE FEE-COST
             const totalTicketsLimit = Math.max(0, (fee - cost) * p * 10);
             const partIndiv = round10((totalTicketsLimit * tax) / p);
             const pool = totalTicketsLimit - (partIndiv * p);
@@ -235,10 +235,10 @@
             document.getElementById('outEventName').innerText = document.getElementById('masterEvent').value;
             document.getElementById('outTourneyName').innerText = t.name;
             document.getElementById('outLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
-            document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee}`;
+            document.getElementById('outDetails').innerText = `Players: ${p} | Entry: $${fee} | Cost: $${cost}`;
             document.getElementById('printArea').style.display = 'block';
 
-            historyData.push({name: t.name, players: p, rev: p*t.t_fee, exp: p*t.t_cost, tickets: currentTotal});
+            historyData.push({name: t.name, players: p, rev: p*fee, exp: p*cost, tickets: currentTotal});
         }
 
         function showFinalReport() {
