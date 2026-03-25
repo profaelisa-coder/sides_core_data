@@ -330,7 +330,12 @@
             document.getElementById('outTourneyName').innerText = t.name;
             document.getElementById('outLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
             document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee}`;
+            document.getElementById('printArea').classList.remove('no-print');
+            document.getElementById('reportArea').classList.add('no-print');
+
             document.getElementById('printArea').style.display = 'block';
+            document.getElementById('reportArea').style.display = 'none';
+            
             historyData.push({name: t.name, players: p, rev: p*t.t_fee, exp: p*t.t_cost, tickets: currentTotal});
         }
 
@@ -412,6 +417,9 @@
             document.getElementById('repEventNameHeader').innerText = document.getElementById('masterEvent').value;
             document.getElementById('repLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
             
+            document.getElementById('printArea').classList.add('no-print');
+            document.getElementById('reportArea').classList.remove('no-print');
+
             document.getElementById('dateModal').style.display = 'none';
             document.getElementById('reportArea').style.display = 'block';
             document.getElementById('printArea').style.display = 'none';
