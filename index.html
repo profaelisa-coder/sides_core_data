@@ -229,6 +229,7 @@
                 } else {
                     document.getElementById('setupArea').style.display='block';
                     loadTournaments();
+		loadHistoryFromCloud();
                 }
             } else if (staffRegex.test(rawId)) {
                 const prefix = rawId.substring(0, 3); 
@@ -241,6 +242,7 @@
                     document.getElementById('login-area').style.display='none';
                     document.getElementById('staffArea').style.display='block';
                     loadTournaments();
+		loadHistoryFromCloud();
                 } else alert("ACCESS DENIED: Event not found.");
             } else {
                 alert("ACCESS DENIED");
@@ -296,7 +298,7 @@
         }
         function round10(val) { return Math.round(val / 10) * 10; }
 
-        function generatePayout() {
+           function generatePayout() {
             const t = tournamentCatalog[document.getElementById('staffSelectTourney').value];
             const p = parseInt(document.getElementById('staffPlayers').value) || 0;
             const factor = parseFloat(document.getElementById('masterFactor').value);
@@ -456,14 +458,31 @@
             document.getElementById('repEventNameHeader').innerText = document.getElementById('masterEvent').value;
             document.getElementById('repLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
             
-            // Define o que a impressora vê
+            
             document.getElementById('reportArea').classList.remove('no-print');
             document.getElementById('printArea').classList.add('no-print');
 
-            // Define o que a tela mostra (Limpa o modal e o payout antigo)
+            
             document.getElementById('dateModal').style.display = 'none';
             document.getElementById('printArea').style.display = 'none';
             document.getElementById('reportArea').style.display = 'block';
+        }
+	async function loadHistoryFromCloud() {
+            const { data, error } = await _supabase
+                .from('tournament_history')
+                .select('*')
+                .eq('event_id', currentEventID);
+
+            if (data && data.length > 0) {
+                historyData = data.map(h => ({
+                    name: h.tournament_name,
+                    players: h.players,
+                    rev: h.players * h.entry_fee,
+                    exp: h.players * h.costs,
+                    tickets: h.total_tickets
+                }));
+                console.log("Histórico recuperado da nuvem!");
+            }
         }
     </script>
 </body>
