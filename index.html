@@ -352,8 +352,8 @@
             document.getElementById('printArea').classList.remove('no-print');
             document.getElementById('reportArea').classList.add('no-print');
 
-           const existingIndex = historyData.findIndex(h => h.name === t.name);
-            
+         
+            const existingIndex = historyData.findIndex(h => h.name === t.name);
             const newData = {
                 name: t.name, 
                 players: p, 
@@ -361,14 +361,23 @@
                 exp: p * t.t_cost, 
                 tickets: currentTotal
             };
+            if (existingIndex > -1) historyData[existingIndex] = newData;
+            else historyData.push(newData);
 
-            if (existingIndex > -1) {
-                historyData[existingIndex] = newData;
-            } else {
-                historyData.push(newData);
-            }
-        }
-
+            
+            _supabase.from('tournament_history').upsert({
+                event_id: currentEventID,
+                tournament_name: t.name,
+                players: p,
+                entry_fee: t.t_fee,
+                costs: t.t_cost,
+                total_tickets: currentTotal
+            }, { onConflict: 'event_id, tournament_name' })
+            .then(({ error }) => {
+                if (error) console.error("Erro ao salvar na nuvem:", error);
+                else console.log("Dados blindados no Supabase!");
+            });
+		}
         function unlockSetup() {
             document.getElementById('modalSenha').style.display = 'flex';
             document.getElementById('inputSenhaRetorno').focus();
