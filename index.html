@@ -148,7 +148,43 @@
             <tbody id="reportTableBody"></tbody>
             <tfoot id="reportFooter"></tfoot> </table>
     </div>
+<div id="dateModal" class="no-print" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9998; justify-content:center; align-items:center;">
+        <div style="background:white; padding:30px; border-radius:12px; text-align:center; width:450px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <h3 style="color:var(--dark); margin-top:0;">REPORT DATE SETUP</h3>
+            <p style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">Select the event dates for the final header:</p>
+            
+            <div style="display:flex; gap:10px; margin-bottom:20px; justify-content:center;">
+                <div class="input-group">
+                    <label>Month</label>
+                    <select id="selMonth" style="padding:8px;">
+                        <option value="January">January</option><option value="February">February</option>
+                        <option value="March">March</option><option value="April">April</option>
+                        <option value="May">May</option><option value="June">June</option>
+                        <option value="July">July</option><option value="August">August</option>
+                        <option value="September">September</option><option value="October">October</option>
+                        <option value="November">November</option><option value="December">December</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>First Day</label>
+                    <input type="number" id="selDayStart" min="1" max="31" value="1" style="width:60px; padding:8px;">
+                </div>
+                <div class="input-group">
+                    <label>Last Day</label>
+                    <input type="number" id="selDayEnd" min="1" max="31" value="3" style="width:60px; padding:8px;">
+                </div>
+                <div class="input-group">
+                    <label>Year</label>
+                    <input type="number" id="selYear" value="2026" style="width:80px; padding:8px;">
+                </div>
+            </div>
 
+            <div style="display:flex; gap:10px;">
+                <button onclick="finalizeReportWithDate()" style="flex:1; background:var(--green); color:white; padding:12px;">GENERATE PDF</button>
+                <button onclick="closeDateModal()" style="flex:1; background:#ccc; color:black; padding:12px;">CANCEL</button>
+            </div>
+        </div>
+    </div>
     <div id="modalSenha" class="no-print" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
         <div style="background:white; padding:30px; border-radius:12px; text-align:center; width:300px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
             <h4 style="color:var(--dark); margin-top:0;">ENTER MASTER PASSWORD</h4>
@@ -327,17 +363,27 @@
         function resetSystem() { if(confirm("RESET ALL?") && prompt("Type DELETE")==="DELETE") location.reload(); }
         
        function showFinalReport() {
+            document.getElementById('dateModal').style.display = 'flex';
+        }
+
+        function closeDateModal() {
+            document.getElementById('dateModal').style.display = 'none';
+        }
+    function finalizeReportWithDate() {
+            const month = document.getElementById('selMonth').value;
+            const dayStart = document.getElementById('selDayStart').value;
+            const dayEnd = document.getElementById('selDayEnd').value;
+            const year = document.getElementById('selYear').value;
+
+            document.getElementById('repEventDate').innerText = `${month} ${dayStart}-${dayEnd}, ${year}`;
+
             const tbody = document.getElementById('reportTableBody');
             const tfoot = document.getElementById('reportFooter');
             tbody.innerHTML = "";
             tfoot.innerHTML = "";
 
-            let totalP = 0;
-            let totalRev = 0;
-            let totalExp = 0;
-            let totalTick = 0;
+            let totalP = 0, totalRev = 0, totalExp = 0, totalTick = 0;
 
-            // Preenche as linhas dos torneios
             historyData.forEach(h => {
                 totalP += h.players;
                 totalRev += h.rev;
@@ -354,7 +400,6 @@
                     </tr>`;
             });
 
-            // Cria a linha de TOTAIS (Item 7 da lista)
             tfoot.innerHTML = `
                 <tr class="row-total">
                     <td>TOTALS</td>
@@ -364,17 +409,17 @@
                     <td>${totalTick.toLocaleString()}</td>
                 </tr>`;
 
-            // Atualiza os dados do cabeçalho do Report
             document.getElementById('repEventNameHeader').innerText = document.getElementById('masterEvent').value;
             document.getElementById('repLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
             
-            // Exibe o Report e esconde o Payout simples
+            document.getElementById('dateModal').style.display = 'none';
             document.getElementById('reportArea').style.display = 'block';
             document.getElementById('printArea').style.display = 'none';
             
-            // Abre a tela de impressão
-            window.print();
+            setTimeout(() => {
+                window.print();
+            }, 500);
         }
-    </script>
+	</script>
 </body>
 </html>
