@@ -142,6 +142,7 @@
             <thead>
                 <tr>
                     <th>TOURNAMENT</th>
+		    <th>DAY / HOUR</th>
                     <th>PLAYERS</th>
                     <th>ENTRY ($)</th>
                     <th>COSTS ($)</th>
@@ -257,36 +258,59 @@
             loadTournaments();
         }
 
-        async function loadTournaments() {
-            const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
-            tournamentCatalog = data || [];
-            const select = document.getElementById('staffSelectTourney');
-            const tbody = document.querySelector('#catalogTable tbody');
-            select.innerHTML = ""; tbody.innerHTML = "";
-            tournamentCatalog.forEach((t, i) => {
-                select.innerHTML += `<option value="${i}">${t.t_hour} - ${t.name}</option>`;
-                tbody.innerHTML += `<tr><td>${t.name}</td><td><button onclick="removeT(${t.id})">❌</button></td></tr>`;
-            });
-            updateStaffFee();
-        }
+       async function loadTournaments() {
+    const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
+    tournamentCatalog = data || [];
+    
+    const select = document.getElementById('staffSelectTourney');
+    const tbody = document.querySelector('#catalogTable tbody');
+    
+    select.innerHTML = '<option value="">Select Tournament...</option>'; 
+    tbody.innerHTML = "";
 
-        async function addTournament() {
-            const name = document.getElementById('tName').value;
-            const fee = parseFloat(document.getElementById('tFee').value);
-            if(!name || isNaN(fee)) return alert("Name and Fee required!");
-            
-            const t = {
-                event_id: currentEventID,
-                name: name,
-                t_date: document.getElementById('tDay').value,
-                t_hour: document.getElementById('tHour').value,
-                t_fee: fee,
-                t_cost: parseFloat(document.getElementById('tCost').value) || 0
-            };
-            await _supabase.from('tournament_catalog').insert([t]);
-            loadTournaments();
-        }
+    tournamentCatalog.forEach((t, i) => {
+        
+        select.innerHTML += `<option value="${i}">${t.hour} - ${t.name} (${t.day})</option>`;
+        
+        
+        tbody.innerHTML += `<tr><td>${t.name} (${t.day})</td><td><button onclick="removeT('${t.id}')">❌</button></td></tr>`;
+    });
+    if(typeof updateStaffFee === "function") updateStaffFee();
+}
 
+     async function addTournament() {
+    	const name = document.getElementById('tName').value.trim();
+   	 const hour = document.getElementById('tHour').value.trim();
+   	 const day = document.getElementById('tDay').value;
+   	 const fee = parseFloat(document.getElementById('tFee').value) || 0;
+   	 const cost = parseFloat(document.getElementById('tCost').value) || 0;
+
+  	  if (!name) return alert("Enter Tournament Name");
+
+    
+    const generatedID = (name + day + hour).toLowerCase().replace(/\s+/g, '');
+
+    const tourney = {
+        event_id: currentEventID, 
+        id: generatedID, 
+        name: name,
+        hour: hour,
+        day: day,
+        t_fee: fee,
+        t_cost: cost
+    };
+
+    
+    const { error } = await _supabase.from('tournament_catalog').insert([tourney]);
+    
+    if (error) {
+        alert("Error: Tournament might already exist with this Name/Day/Hour");
+    } else {
+        document.getElementById('tName').value = "";
+        document.getElementById('tHour').value = "";
+        loadTournaments();
+    }
+}
         function updateStaffFee() {
             const t = tournamentCatalog[document.getElementById('staffSelectTourney').value];
             if(t) document.getElementById('staffFee').value = t.t_fee;
@@ -355,32 +379,39 @@
             document.getElementById('reportArea').classList.add('no-print');
 
          
-            const existingIndex = historyData.findIndex(h => h.name === t.name);
             const newData = {
+                id: t.id, 
                 name: t.name, 
+                schedule: `${t.day} - ${t.hour}`, 
                 players: p, 
                 rev: p * t.t_fee, 
                 exp: p * t.t_cost, 
                 tickets: currentTotal
             };
-            if (existingIndex > -1) historyData[existingIndex] = newData;
-            else historyData.push(newData);
 
+            const existingIndex = historyData.findIndex(h => h.id === t.id);
+            if (existingIndex > -1) {
+                historyData[existingIndex] = newData;
+            } else {
+                historyData.push(newData);
+            }
             
             _supabase.from('tournament_history').upsert({
                 event_id: currentEventID,
+                tournament_id: t.id, 
                 tournament_name: t.name,
+                schedule: `${t.day} - ${t.hour}`, 
                 players: p,
                 entry_fee: t.t_fee,
                 costs: t.t_cost,
                 total_tickets: currentTotal
-            }, { onConflict: 'event_id, tournament_name' })
+            }, { onConflict: 'event_id, tournament_id' }) 
             .then(({ error }) => {
-                if (error) console.error("Erro ao salvar na nuvem:", error);
-                else console.log("Dados blindados no Supabase!");
+                if (error) console.error("Erro na nuvem:", error);
+                else console.log("Dados blindados por ID!");
             });
-		}
-        function unlockSetup() {
+
+	function unlockSetup() {
             document.getElementById('modalSenha').style.display = 'flex';
             document.getElementById('inputSenhaRetorno').focus();
         }
@@ -439,6 +470,7 @@
                 tbody.innerHTML += `
                     <tr>
                         <td>${h.name}</td>
+			<td>${h.schedule || '-'}</td>
                         <td>${h.players}</td>
                         <td>$${h.rev.toFixed(2)}</td>
                         <td>$${h.exp.toFixed(2)}</td>
@@ -448,8 +480,7 @@
 
         tfoot.innerHTML = `
                 <tr class="row-total">
-                    <td>TOTALS</td>
-                    <td>${totalP}</td>
+                    <td colspan="2">TOTALS</td> <td>${totalP}</td>
                     <td>$${totalRev.toFixed(2)}</td>
                     <td>$${totalExp.toFixed(2)}</td>
                     <td>${totalTick.toLocaleString()}</td>
@@ -467,6 +498,7 @@
             document.getElementById('printArea').style.display = 'none';
             document.getElementById('reportArea').style.display = 'block';
         }
+
 	async function loadHistoryFromCloud() {
             const { data, error } = await _supabase
                 .from('tournament_history')
@@ -474,8 +506,11 @@
                 .eq('event_id', currentEventID);
 
             if (data && data.length > 0) {
+                
                 historyData = data.map(h => ({
+                    id: h.tournament_id, 
                     name: h.tournament_name,
+                    schedule: h.schedule, 
                     players: h.players,
                     rev: h.players * h.entry_fee,
                     exp: h.players * h.costs,
