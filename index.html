@@ -91,7 +91,7 @@
             <img id="outLogoImg" src="" style="height:60px;">
             <h1 id="outEventName" style="text-transform:uppercase;"></h1>
             <h2 id="outTourneyName" style="color:var(--primary-red); margin:5px 0;"></h2>
-            <p id="outDetails"></p>
+            <p id="outDetails" style="font-weight:bold;"></p>
         </div>
         <table class="payout-table" style="width:100%; border-collapse:collapse; margin-top:20px;">
             <thead><tr style="background:var(--dark); color:white;"><th>RANK</th><th>TICKETS</th></tr></thead>
@@ -105,7 +105,7 @@
             <h3>CONSOLIDATED FINAL REPORT</h3>
         </div>
         <table class="report-table">
-            <thead><tr><th>Tourney</th><th>Players</th><th>Revenue</th><th>Expense</th><th>Tickets</th></tr></thead>
+            <thead><tr><th>Tournament</th><th>Players</th><th>Revenue</th><th>Expense</th><th>Tickets</th></tr></thead>
             <tbody id="reportTableBody"></tbody>
         </table>
     </div>
@@ -120,7 +120,8 @@
         let historyData = [];
 
         async function checkAccess() {
-            const id = document.getElementById('event-id-input').value.trim().toUpperCase();
+            const idInput = document.getElementById('event-id-input');
+            const id = idInput.value.trim().toUpperCase();
             if(!id) return;
             if (id.endsWith('_LEAD')) {
                 currentEventID = id;
@@ -208,15 +209,15 @@
 
             for (let i = 0; i < tiers.length; i++) {
                 let prize = round10(unit * tiers[i].weight) + partIndiv;
-                body.innerHTML += `<tr><td style="padding:8px">${tiers[i].name}</td><td>${prize.toLocaleString()}</td></tr>`;
+                body.innerHTML += `<tr><td style="padding:10px">${tiers[i].name}</td><td style="font-weight:bold">${prize.toLocaleString()}</td></tr>`;
                 currentTotal += (round10(unit * tiers[i].weight) * tiers[i].count);
             }
-            body.innerHTML += `<tr style="background:#f9f9f9;"><td>Participation</td><td>${partIndiv}</td></tr>`;
+            body.innerHTML += `<tr style="background:#f9f9f9; font-style:italic"><td>Participation</td><td>${partIndiv.toLocaleString()}</td></tr>`;
 
             document.getElementById('outEventName').innerText = document.getElementById('masterEvent').value;
             document.getElementById('outTourneyName').innerText = t.name;
             document.getElementById('outLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
-            document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee}`;
+            document.getElementById('outDetails').innerText = `${t.t_date} | Players: ${p} | Fee: $${t.t_fee}`;
             document.getElementById('printArea').style.display = 'block';
 
             historyData.push({name: t.name, players: p, rev: p*t.t_fee, exp: p*t.t_cost, tickets: currentTotal});
@@ -225,18 +226,19 @@
         function showFinalReport() {
             const tbody = document.getElementById('reportTableBody'); tbody.innerHTML = "";
             historyData.forEach(h => {
-                tbody.innerHTML += `<tr><td>${h.name}</td><td>${h.players}</td><td>$${h.rev}</td><td>$${h.exp}</td><td>${h.tickets.toLocaleString()}</td></tr>`;
+                tbody.innerHTML += `<tr><td>${h.name}</td><td>${h.players}</td><td>$${h.rev.toFixed(2)}</td><td>$${h.exp.toFixed(2)}</td><td>${h.tickets.toLocaleString()}</td></tr>`;
             });
             document.getElementById('repEventName').innerText = document.getElementById('masterEvent').value;
             document.getElementById('reportArea').style.display = 'block';
+            document.getElementById('printArea').style.display = 'none';
             window.print();
         }
 
-        async function removeT(id) { await _supabase.from('tournament_catalog').delete().eq('id', id); loadTournaments(); }
+        async function removeT(id) { if(confirm("Delete?")) { await _supabase.from('tournament_catalog').delete().eq('id', id); loadTournaments(); } }
         function saveEmailsAndGo() { document.getElementById('emailSetupArea').style.display='none'; document.getElementById('setupArea').style.display='block'; }
         function lockSetup() { document.getElementById('setupArea').style.display='none'; document.getElementById('staffArea').style.display='block'; }
         function unlockSetup() { if(prompt("Pass:")==="1234") { document.getElementById('setupArea').style.display='block'; document.getElementById('staffArea').style.display='none'; }}
-        function resetSystem() { if(confirm("RESET?") && prompt("Type DELETE")==="DELETE") location.reload(); }
+        function resetSystem() { if(confirm("RESET ALL?") && prompt("Type DELETE")==="DELETE") location.reload(); }
     </script>
 </body>
 </html>
