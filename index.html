@@ -21,6 +21,9 @@
         .btn-update { background: var(--primary-red); color: white; }
         .payout-page, .report-page { background: white; width: 210mm; min-height: 297mm; padding: 15mm; margin: 20px auto; display: none; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         .header-payout { text-align: center; border-bottom: 3px solid var(--dark); padding-bottom: 10px; }
+        .report-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .report-table th { background: var(--dark); color: white; padding: 10px; }
+        .report-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
         @media print { .no-print { display: none !important; } .payout-page, .report-page { display: block !important; box-shadow: none; margin: 0; } }
     </style>
 </head>
@@ -36,7 +39,7 @@
 
     <div id="emailSetupArea" class="no-print" style="display:none; text-align:center; margin-top: 50px;">
         <div class="admin-panel" style="width:400px; margin:auto;">
-            <h3>COMMUNICATION SETUP</h3>
+            <h3>📧 COMMUNICATION SETUP</h3>
             <input type="email" id="toEmail" placeholder="TO Email" style="width:90%; margin-bottom:10px;">
             <input type="email" id="leadEmail" placeholder="Lead Email" style="width:90%; margin-bottom:20px;">
             <button onclick="saveEmailsAndGo()" style="background:var(--green); color:white; width:90%;">START SETUP</button>
@@ -57,7 +60,7 @@
                 </select>
             </div>
         </div>
-        <h4>📅 Catalog</h4>
+        <h4>📅 Tournament Catalog</h4>
         <div class="grid-inputs">
             <div class="input-group"><label>Name</label><input type="text" id="tName"></div>
             <div class="input-group"><label>Hour</label><input type="text" id="tHour"></div>
@@ -101,8 +104,8 @@
             <h1 id="repEventName"></h1>
             <h3>CONSOLIDATED FINAL REPORT</h3>
         </div>
-        <table class="payout-table" style="width:100%; border-collapse:collapse;">
-            <thead><tr style="background:var(--dark); color:white;"><th>Tournament</th><th>Players</th><th>Rev</th><th>Exp</th><th>Tickets</th></tr></thead>
+        <table class="report-table">
+            <thead><tr><th>Tourney</th><th>Players</th><th>Revenue</th><th>Expense</th><th>Tickets</th></tr></thead>
             <tbody id="reportTableBody"></tbody>
         </table>
     </div>
@@ -114,7 +117,7 @@
 
         let tournamentCatalog = [];
         let currentEventID = '';
-        let historyData = []; // Para o report final sem Firebase
+        let historyData = [];
 
         async function checkAccess() {
             const id = document.getElementById('event-id-input').value.trim().toUpperCase();
@@ -165,7 +168,6 @@
             if(t) document.getElementById('staffFee').value = t.t_fee;
         }
 
-        // --- MATEMÁTICA RESTAURADA (ESTILO TIERS) ---
         function getPayoutRank(p) {
             if (p >= 227) return 128; if (p >= 129) return 64; if (p >= 65) return 32;
             if (p >= 33) return 16; if (p >= 17) return 8; if (p >= 9) return 4; return 2;
@@ -202,11 +204,11 @@
 
             const unit = pool / totalW;
             let currentTotal = partIndiv * p;
-
             const body = document.getElementById('payoutBody'); body.innerHTML = "";
+
             for (let i = 0; i < tiers.length; i++) {
                 let prize = round10(unit * tiers[i].weight) + partIndiv;
-                body.innerHTML += `<tr><td>${tiers[i].name}</td><td>${prize.toLocaleString()}</td></tr>`;
+                body.innerHTML += `<tr><td style="padding:8px">${tiers[i].name}</td><td>${prize.toLocaleString()}</td></tr>`;
                 currentTotal += (round10(unit * tiers[i].weight) * tiers[i].count);
             }
             body.innerHTML += `<tr style="background:#f9f9f9;"><td>Participation</td><td>${partIndiv}</td></tr>`;
@@ -214,9 +216,9 @@
             document.getElementById('outEventName').innerText = document.getElementById('masterEvent').value;
             document.getElementById('outTourneyName').innerText = t.name;
             document.getElementById('outLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
+            document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee}`;
             document.getElementById('printArea').style.display = 'block';
 
-            // Salva localmente para o report
             historyData.push({name: t.name, players: p, rev: p*t.t_fee, exp: p*t.t_cost, tickets: currentTotal});
         }
 
