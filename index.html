@@ -202,19 +202,30 @@
             updateStaffFee();
         }
 
-        async function addTournament() {
-            const name = document.getElementById('tName').value.trim();
-            const hour = document.getElementById('tHour').value.trim();
-            const day = document.getElementById('tDay').value;
-            const fee = parseFloat(document.getElementById('tFee').value) || 0;
-            const cost = parseFloat(document.getElementById('tCost').value) || 0;
-            if (!name) return alert("Enter Name");
-            const generatedID = (name + day + hour).toLowerCase().replace(/\s+/g, '');
-            const tourney = { event_id: currentEventID, id: generatedID, name: name, hour: hour, day: day, t_fee: fee, t_cost: cost };
-            const { error } = await _supabase.from('tournament_catalog').insert([tourney]);
-            if (error) alert("Error: Tournament already exists.");
-            else { document.getElementById('tName').value = ""; document.getElementById('tHour').value = ""; loadTournaments(); }
-        }
+       async function addTournament() {
+    const name = document.getElementById('tName').value.trim();
+    const hour = document.getElementById('tHour').value.trim();
+    const day = document.getElementById('tDay').value;
+    const fee = parseFloat(document.getElementById('tFee').value) || 0;
+    const cost = parseFloat(document.getElementById('tCost').value) || 0;
+
+    if (!name) return alert("Enter Name");
+
+    tournamentCatalog = []; 
+
+    const generatedID = (name + day + hour).toLowerCase().replace(/\s+/g, '');
+    const tourney = { event_id: currentEventID, id: generatedID, name: name, hour: hour, day: day, t_fee: fee, t_cost: cost };
+    
+    const { error } = await _supabase.from('tournament_catalog').insert([tourney]);
+    
+    if (error) {
+        alert("Error: Tournament already exists.");
+    } else { 
+        document.getElementById('tName').value = ""; 
+        document.getElementById('tHour').value = ""; 
+        loadTournaments(); 
+    }
+}
 
         function updateStaffFee() {
             const val = document.getElementById('staffSelectTourney').value;
