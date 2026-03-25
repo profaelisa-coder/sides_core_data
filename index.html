@@ -259,16 +259,16 @@
         }
 
        async function loadTournaments() {
-    const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
-    tournamentCatalog = data || [];
+    	  const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
+   	  tournamentCatalog = data || [];
     
-    const select = document.getElementById('staffSelectTourney');
-    const tbody = document.querySelector('#catalogTable tbody');
+   	 const select = document.getElementById('staffSelectTourney');
+  	  const tbody = document.querySelector('#catalogTable tbody');
     
-    select.innerHTML = '<option value="">Select Tournament...</option>'; 
-    tbody.innerHTML = "";
+  	  select.innerHTML = '<option value="">Select Tournament...</option>'; 
+  	  tbody.innerHTML = "";
 
-    tournamentCatalog.forEach((t, i) => {
+  	  tournamentCatalog.forEach((t, i) => {
         
         select.innerHTML += `<option value="${i}">${t.hour} - ${t.name} (${t.day})</option>`;
         
@@ -278,16 +278,15 @@
     if(typeof updateStaffFee === "function") updateStaffFee();
 }
 
-     async function addTournament() {
-    	const name = document.getElementById('tName').value.trim();
-   	 const hour = document.getElementById('tHour').value.trim();
-   	 const day = document.getElementById('tDay').value;
-   	 const fee = parseFloat(document.getElementById('tFee').value) || 0;
-   	 const cost = parseFloat(document.getElementById('tCost').value) || 0;
+   async function addTournament() {
+    const name = document.getElementById('tName').value.trim();
+    const hour = document.getElementById('tHour').value.trim();
+    const day = document.getElementById('tDay').value;
+    const fee = parseFloat(document.getElementById('tFee').value) || 0;
+    const cost = parseFloat(document.getElementById('tCost').value) || 0;
 
-  	  if (!name) return alert("Enter Tournament Name");
+    if (!name) return alert("Enter Tournament Name");
 
-    
     const generatedID = (name + day + hour).toLowerCase().replace(/\s+/g, '');
 
     const tourney = {
@@ -300,7 +299,6 @@
         t_cost: cost
     };
 
-    
     const { error } = await _supabase.from('tournament_catalog').insert([tourney]);
     
     if (error) {
@@ -311,11 +309,11 @@
         loadTournaments();
     }
 }
-        function updateStaffFee() {
-            const t = tournamentCatalog[document.getElementById('staffSelectTourney').value];
-            if(t) document.getElementById('staffFee').value = t.t_fee;
-        }
 
+function updateStaffFee() {
+    const t = tournamentCatalog[document.getElementById('staffSelectTourney').value];
+    if(t) document.getElementById('staffFee').value = t.t_fee;
+}
         function getPayoutRank(p) {
             if (p >= 227) return 128; if (p >= 129) return 64; if (p >= 65) return 32;
             if (p >= 33) return 16; if (p >= 17) return 8; if (p >= 9) return 4; return 2;
