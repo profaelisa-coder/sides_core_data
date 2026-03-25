@@ -21,33 +21,18 @@
         .btn-update { background: var(--primary-red); color: white; }
         .payout-page { background: white; width: 210mm; min-height: 297mm; padding: 15mm; margin: 20px auto; display: none; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         .header-payout { text-align: center; border-bottom: 3px solid var(--dark); padding-bottom: 10px; }
-        
-        .report-page { 
-            background: white; 
-            width: 210mm; 
-            padding: 15mm; 
-            margin: 20px auto; 
-            border-top: 8px solid var(--dark); 
-            display: none; 
-        }
+        .report-page { background: white; width: 210mm; padding: 15mm; margin: 20px auto; border-top: 8px solid var(--dark); display: none; }
         .report-header { text-align: center; margin-bottom: 30px; }
         .report-header img { height: 80px; margin-bottom: 10px; }
         .report-header h1 { font-size: 2.2rem; margin: 5px 0; text-transform: uppercase; color: var(--dark); }
         .report-header h2 { font-size: 1.2rem; color: #333; margin-bottom: 5px; }
         .report-header h3 { font-size: 1.8rem; color: var(--primary-red); text-transform: uppercase; margin-top: 10px; border-top: 2px solid #eee; border-bottom: 2px solid #eee; padding: 10px 0; }
-        
         .report-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9rem; }
         .report-table th { border-bottom: 2px solid #ddd; padding: 12px; color: #777; text-transform: uppercase; text-align: center; font-size: 0.8rem; background: none; }
         .report-table td { padding: 12px 10px; border-bottom: 1px dotted #ccc; text-align: center; font-weight: bold; color: #333; }
-        
         .report-table th:first-child, .report-table td:first-child { text-align: left; padding-left: 10px; }
-        
         .row-total td { border-top: 3px solid var(--dark); border-bottom: none; background: #f9f9f9; font-size: 1.1rem; padding: 15px 10px; color: var(--dark); }
-
-        @media print { 
-            .no-print { display: none !important; } 
-            .payout-page, .report-page { box-shadow: none; margin: 0; } 
-        }
+        @media print { .no-print { display: none !important; } .payout-page, .report-page { box-shadow: none; margin: 0; } }
     </style>
 </head>
 <body>
@@ -55,9 +40,7 @@
     <div id="login-area" class="no-print">
         <div class="login-card" style="background:white; padding:40px; border-radius:15px; text-align:center; width:350px; margin: 80px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
             <h2 style="color: var(--dark);">CORE PRIZE</h2>
-            <input type="password" id="event-id-input" placeholder="ENTER ACCESS CODE" 
-                   autocomplete="new-password" spellcheck="false" 
-                   style="width:100%; margin: 20px 0; text-transform: uppercase; padding:12px; letter-spacing: 4px; text-align: center; border: 1px solid #ddd; border-radius: 8px;">
+            <input type="password" id="event-id-input" placeholder="ENTER ACCESS CODE" autocomplete="new-password" style="width:100%; margin: 20px 0; text-transform: uppercase; padding:12px; letter-spacing: 4px; text-align: center; border: 1px solid #ddd; border-radius: 8px;">
             <button onclick="checkAccess()" style="background: var(--dark); color: white; width: 100%;">Access System</button>
         </div>
     </div>
@@ -65,52 +48,40 @@
     <div id="emailSetupArea" class="no-print" style="display:none; text-align:center; margin-top: 50px;">
         <div class="admin-panel" style="width:450px; margin:auto;">
             <h3>📧 COMMUNICATION SETUP</h3>
-            <p style="font-size: 0.85rem; color: #555; margin-bottom: 20px; line-height: 1.4; background: #f9f9f9; padding: 12px; border-radius: 6px; border: 1px solid #eee; text-align: left;">
-                If you have already registered these emails in this session, <br>
-                simply click <strong>START SETUP</strong> to proceed.
-            </p>
-            <div class="input-group"><label>TO Email</label><input type="email" id="toEmail" placeholder="organizer@email.com" style="width:95%; margin-bottom:10px;"></div>
-            <div class="input-group"><label>Lead Email</label><input type="email" id="leadEmail" placeholder="lead@email.com" style="width:95%; margin-bottom:20px;"></div>
+            <div class="input-group"><label>TO Email</label><input type="email" id="toEmail" style="width:95%; margin-bottom:10px;"></div>
+            <div class="input-group"><label>Lead Email</label><input type="email" id="leadEmail" style="width:95%; margin-bottom:20px;"></div>
             <button onclick="saveEmailsAndGo()" style="background:var(--green); color:white; width:95%;">START SETUP</button>
         </div>
     </div>
 
     <div id="setupArea" class="admin-panel no-print" style="display: none;">
-        <h3>🛡️ ADMIN SETUP <button onclick="location.reload()" style="font-size: 0.65rem; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 4px; padding: 4px 10px; cursor: pointer; float: right;">EXIT SYSTEM</button></h3>
-        
+        <h3>🛡️ ADMIN SETUP <button onclick="location.reload()" style="font-size: 0.65rem; background: rgba(255,255,255,0.1); color: white; padding: 4px 10px; float: right;">EXIT</button></h3>
         <div class="grid-inputs">
-            <div class="input-group"><label>Event Name</label><input type="text" id="masterEvent" autocomplete="off" spellcheck="false"></div>
+            <div class="input-group"><label>Event Name</label><input type="text" id="masterEvent"></div>
             <div class="input-group"><label>Logo</label><select id="masterLogo"><option value="REGIONAL">REGIONAL</option><option value="IC">IC</option></select></div>
-            <div class="input-group"><label>Part. %</label><input type="number" id="masterTax" value="20" autocomplete="off"></div>
-            <div class="input-group"><label>Spread Factor</label>
-                <select id="masterFactor">
-                    <option value="2.0">2.0 (Aggressive)</option>
-                    <option value="1.75" selected>1.75 (Balanced)</option>
-                    <option value="1.5">1.5 (Flat)</option>
-                </select>
-            </div>
+            <div class="input-group"><label>Part. %</label><input type="number" id="masterTax" value="20"></div>
+            <div class="input-group"><label>Spread Factor</label><select id="masterFactor"><option value="2.0">2.0</option><option value="1.75" selected>1.75</option><option value="1.5">1.5</option></select></div>
         </div>
         <h4>📅 Tournament Catalog</h4>
         <div class="grid-inputs">
-            <div class="input-group"><label>Name</label><input type="text" id="tName" autocomplete="off" spellcheck="false"></div>
-            <div class="input-group"><label>Hour</label><input type="text" id="tHour" autocomplete="off" spellcheck="false"></div>
-            <div class="input-group"><label>Day</label><select id="tDay"><option value="Day 1">Day 1</option><option value="Day 2">Day 2</option><option value="Day 3">Day 3</option></select></div>
-            <div class="input-group"><label>Fee</label><input type="number" id="tFee" autocomplete="off"></div>
-            <div class="input-group"><label>Cost</label><input type="number" id="tCost" autocomplete="off"></div>
-            <button onclick="addTournament()" style="background:var(--gold); height:42px;">+ ADD</button>
+            <input type="text" id="tName" placeholder="Name">
+            <input type="text" id="tHour" placeholder="09:00">
+            <select id="tDay"><option value="Day 1">Day 1</option><option value="Day 2">Day 2</option><option value="Day 3">Day 3</option></select>
+            <input type="number" id="tFee" placeholder="Fee">
+            <input type="number" id="tCost" placeholder="Cost">
+            <button onclick="addTournament()" style="background:var(--gold);">+ ADD</button>
         </div>
         <table class="tourney-list" id="catalogTable"><tbody></tbody></table>
-        
         <button class="btn-lock" onclick="lockSetup()">🔒 LOCK TO STAFF</button>
         <button class="btn-close-event" onclick="showFinalReport()">📊 GENERATE FINAL REPORT</button>
         <button class="btn-reset" onclick="resetSystem()">⚠️ RESET SYSTEM</button>
     </div>
 
     <div id="staffArea" class="staff-panel no-print">
-        <h3>🕹️ STAFF OPERATION <button onclick="unlockSetup()" style="font-size:0.6rem; padding: 5px; float: right; cursor:pointer;">Back</button></h3>
+        <h3>🕹️ STAFF OPERATION <button onclick="unlockSetup()" style="font-size:0.6rem; float: right;">Back</button></h3>
         <select id="staffSelectTourney" onchange="updateStaffFee()" style="width:100%; margin-bottom:10px; padding:10px;"></select>
         <div style="display:flex; gap:10px;">
-            <div class="input-group" style="flex:1"><label>Players</label><input type="number" id="staffPlayers" value="0" autocomplete="off"></div>
+            <div class="input-group" style="flex:1"><label>Players</label><input type="number" id="staffPlayers" value="0"></div>
             <div class="input-group" style="flex:1"><label>Fee</label><input type="number" id="staffFee" disabled></div>
         </div>
         <button class="btn-update" onclick="generatePayout()" style="width:100%; margin-top:15px; padding:15px;">UPDATE VIEW</button>
@@ -119,88 +90,51 @@
     <div id="printArea" class="payout-page">
         <div class="header-payout">
             <img id="outLogoImg" src="" style="height:60px;">
-            <h1 id="outEventName" style="text-transform:uppercase;"></h1>
-            <h2 id="outTourneyName" style="color:var(--primary-red); margin:5px 0;"></h2>
-            <p id="outDetails" style="font-weight:bold;"></p>
+            <h1 id="outEventName"></h1>
+            <h2 id="outTourneyName" style="color:var(--primary-red);"></h2>
+            <p id="outDetails"></p>
         </div>
-        <table class="payout-table" style="width:100%; border-collapse:collapse; margin-top:20px;">
+        <table style="width:100%; border-collapse:collapse; margin-top:20px;">
             <thead><tr style="background:var(--dark); color:white;"><th>RANK</th><th>TICKETS</th></tr></thead>
             <tbody id="payoutBody"></tbody>
         </table>
-        <div style="text-align:center; margin-top:20px;" class="no-print">
-            <button onclick="window.print()" style="background:var(--dark); color:white; padding:15px 30px;">🖨️ PRINT PAYOUT</button>
-        </div>
+        <div style="text-align:center; margin-top:20px;" class="no-print"><button onclick="window.print()">🖨️ PRINT</button></div>
     </div>
 
     <div id="reportArea" class="report-page">
         <div class="report-header">
-            <img id="repLogoImg" src="" alt="Logo">
+            <img id="repLogoImg" src="">
             <h1 id="repEventNameHeader"></h1>
-            <h2 id="repEventDate">January 18-20, 2026</h2> <h3>FINAL REPORT</h3>
+            <h2 id="repEventDate"></h2><h3>FINAL REPORT</h3>
         </div>
         <table class="report-table">
-            <thead>
-                <tr>
-                    <th>TOURNAMENT</th>
-		    <th>DAY / HOUR</th>
-                    <th>PLAYERS</th>
-                    <th>ENTRY ($)</th>
-                    <th>COSTS ($)</th>
-                    <th>TICKETS</th>
-                </tr>
-            </thead>
+            <thead><tr><th>TOURNAMENT</th><th>DAY / HOUR</th><th>PLAYERS</th><th>ENTRY ($)</th><th>COSTS ($)</th><th>TICKETS</th></tr></thead>
             <tbody id="reportTableBody"></tbody>
             <tfoot id="reportFooter"></tfoot> 
         </table>
-        <div style="text-align:center; margin-top:30px;" class="no-print">
-            <button onclick="window.print()" style="background:var(--primary-red); color:white; padding:15px 30px; font-size:1.1rem;">🖨️ PRINT FINAL REPORT (PDF)</button>
-        </div>
+        <div style="text-align:center; margin-top:30px;" class="no-print"><button onclick="window.print()" style="background:var(--primary-red); color:white; padding:15px 30px;">🖨️ PRINT FINAL REPORT</button></div>
     </div>
-<div id="dateModal" class="no-print" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9998; justify-content:center; align-items:center;">
-        <div style="background:white; padding:30px; border-radius:12px; text-align:center; width:450px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-            <h3 style="color:var(--dark); margin-top:0;">REPORT DATE SETUP</h3>
-            <p style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">Select the event dates for the final header:</p>
-            
-            <div style="display:flex; gap:10px; margin-bottom:20px; justify-content:center;">
-                <div class="input-group">
-                    <label>Month</label>
-                    <select id="selMonth" style="padding:8px;">
-                        <option value="January">January</option><option value="February">February</option>
-                        <option value="March">March</option><option value="April">April</option>
-                        <option value="May">May</option><option value="June">June</option>
-                        <option value="July">July</option><option value="August">August</option>
-                        <option value="September">September</option><option value="October">October</option>
-                        <option value="November">November</option><option value="December">December</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>First Day</label>
-                    <input type="number" id="selDayStart" min="1" max="31" value="1" style="width:60px; padding:8px;">
-                </div>
-                <div class="input-group">
-                    <label>Last Day</label>
-                    <input type="number" id="selDayEnd" min="1" max="31" value="3" style="width:60px; padding:8px;">
-                </div>
-                <div class="input-group">
-                    <label>Year</label>
-                    <input type="number" id="selYear" value="2026" style="width:80px; padding:8px;">
-                </div>
-            </div>
 
-            <div style="display:flex; gap:10px;">
-                <button onclick="finalizeReportWithDate()" style="flex:1; background:var(--green); color:white; padding:12px;">GENERATE PDF</button>
-                <button onclick="closeDateModal()" style="flex:1; background:#ccc; color:black; padding:12px;">CANCEL</button>
+    <div id="dateModal" class="no-print" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9998; justify-content:center; align-items:center;">
+        <div style="background:white; padding:30px; border-radius:12px; text-align:center; width:450px;">
+            <h3>REPORT DATE SETUP</h3>
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <select id="selMonth"><option value="January">Jan</option><option value="February">Feb</option><option value="March">Mar</option><option value="April">Apr</option><option value="May">May</option><option value="June">Jun</option><option value="July">Jul</option><option value="August">Aug</option><option value="September">Sep</option><option value="October">Oct</option><option value="November">Nov</option><option value="December">Dec</option></select>
+                <input type="number" id="selDayStart" value="1" style="width:60px;">
+                <input type="number" id="selDayEnd" value="3" style="width:60px;">
+                <input type="number" id="selYear" value="2026" style="width:80px;">
             </div>
+            <button onclick="finalizeReportWithDate()" style="background:var(--green); color:white; padding:12px;">GENERATE</button>
+            <button onclick="closeDateModal()">CANCEL</button>
         </div>
     </div>
+
     <div id="modalSenha" class="no-print" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
-        <div style="background:white; padding:30px; border-radius:12px; text-align:center; width:300px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-            <h4 style="color:var(--dark); margin-top:0;">ENTER MASTER PASSWORD</h4>
-            <input type="password" id="inputSenhaRetorno" style="width:100%; padding:12px; margin-bottom:15px; text-align:center; letter-spacing:4px; font-size:1.2rem; border:1px solid #ccc; border-radius:8px;">
-            <div style="display:flex; gap:10px;">
-                <button onclick="confirmarRetorno()" style="flex:1; background:var(--dark); color:white; padding:10px; cursor:pointer;">OK</button>
-                <button onclick="fecharModal()" style="flex:1; background:#ccc; color:black; padding:10px; cursor:pointer;">CANCEL</button>
-            </div>
+        <div style="background:white; padding:30px; border-radius:12px; text-align:center; width:300px;">
+            <h4>ENTER MASTER PASSWORD</h4>
+            <input type="password" id="inputSenhaRetorno" style="width:100%; padding:12px; margin-bottom:15px; text-align:center;">
+            <button onclick="confirmarRetorno()" style="background:var(--dark); color:white;">OK</button>
+            <button onclick="fecharModal()">CANCEL</button>
         </div>
     </div>
 
@@ -218,36 +152,27 @@
             const idInput = document.getElementById('event-id-input');
             const rawId = idInput.value.trim().toUpperCase();
             if(!rawId) return;
-
             const leadRegex = /^[A-Z]{3}\d{4}_LEAD$/;
             const staffRegex = /^[A-Z]{3}\d{2}$/;
 
             if (leadRegex.test(rawId)) {
                 currentEventID = rawId;
                 document.getElementById('login-area').style.display='none';
-                if (!emailsConfigured) {
-                    document.getElementById('emailSetupArea').style.display='flex';
-                } else {
-                    document.getElementById('setupArea').style.display='block';
-                    loadTournaments();
-		loadHistoryFromCloud();
-                }
+                if (!emailsConfigured) document.getElementById('emailSetupArea').style.display='flex';
+                else { document.getElementById('setupArea').style.display='block'; loadTournaments(); loadHistoryFromCloud(); }
             } else if (staffRegex.test(rawId)) {
                 const prefix = rawId.substring(0, 3); 
                 const yearShort = rawId.substring(3, 5); 
                 const searchID = prefix + "20" + yearShort + "_LEAD";
-
                 const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', searchID);
                 if(data && data.length > 0) {
                     currentEventID = searchID;
                     document.getElementById('login-area').style.display='none';
                     document.getElementById('staffArea').style.display='block';
                     loadTournaments();
-		loadHistoryFromCloud();
+                    loadHistoryFromCloud();
                 } else alert("ACCESS DENIED: Event not found.");
-            } else {
-                alert("ACCESS DENIED");
-            }
+            } else alert("ACCESS DENIED");
             idInput.value = "";
         }
 
@@ -258,90 +183,60 @@
             loadTournaments();
         }
 
-       async function loadTournaments() {
-    	  const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
-   	  tournamentCatalog = data || [];
-    
-   	 const select = document.getElementById('staffSelectTourney');
-  	  const tbody = document.querySelector('#catalogTable tbody');
-    
-  	  select.innerHTML = '<option value="">Select Tournament...</option>'; 
-  	  tbody.innerHTML = "";
+        async function loadTournaments() {
+            const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
+            tournamentCatalog = data || [];
+            const select = document.getElementById('staffSelectTourney');
+            const tbody = document.querySelector('#catalogTable tbody');
+            select.innerHTML = '<option value="">Select Tournament...</option>'; 
+            tbody.innerHTML = "";
+            tournamentCatalog.forEach((t, i) => {
+                select.innerHTML += `<option value="${i}">${t.hour} - ${t.name} (${t.day})</option>`;
+                tbody.innerHTML += `<tr><td>${t.name} (${t.day})</td><td><button onclick="removeT('${t.id}')">❌</button></td></tr>`;
+            });
+            updateStaffFee();
+        }
 
-  	  tournamentCatalog.forEach((t, i) => {
-        
-        select.innerHTML += `<option value="${i}">${t.hour} - ${t.name} (${t.day})</option>`;
-        
-        
-        tbody.innerHTML += `<tr><td>${t.name} (${t.day})</td><td><button onclick="removeT('${t.id}')">❌</button></td></tr>`;
-    });
-    if(typeof updateStaffFee === "function") updateStaffFee();
-}
+        async function addTournament() {
+            const name = document.getElementById('tName').value.trim();
+            const hour = document.getElementById('tHour').value.trim();
+            const day = document.getElementById('tDay').value;
+            const fee = parseFloat(document.getElementById('tFee').value) || 0;
+            const cost = parseFloat(document.getElementById('tCost').value) || 0;
+            if (!name) return alert("Enter Name");
+            const generatedID = (name + day + hour).toLowerCase().replace(/\s+/g, '');
+            const tourney = { event_id: currentEventID, id: generatedID, name: name, hour: hour, day: day, t_fee: fee, t_cost: cost };
+            const { error } = await _supabase.from('tournament_catalog').insert([tourney]);
+            if (error) alert("Error: Tournament already exists.");
+            else { document.getElementById('tName').value = ""; document.getElementById('tHour').value = ""; loadTournaments(); }
+        }
 
-   async function addTournament() {
-    const name = document.getElementById('tName').value.trim();
-    const hour = document.getElementById('tHour').value.trim();
-    const day = document.getElementById('tDay').value;
-    const fee = parseFloat(document.getElementById('tFee').value) || 0;
-    const cost = parseFloat(document.getElementById('tCost').value) || 0;
+        function updateStaffFee() {
+            const val = document.getElementById('staffSelectTourney').value;
+            const t = tournamentCatalog[val];
+            if(t) document.getElementById('staffFee').value = t.t_fee;
+        }
 
-    if (!name) return alert("Enter Tournament Name");
-
-    const generatedID = (name + day + hour).toLowerCase().replace(/\s+/g, '');
-
-    const tourney = {
-        event_id: currentEventID, 
-        id: generatedID, 
-        name: name,
-        hour: hour,
-        day: day,
-        t_fee: fee,
-        t_cost: cost
-    };
-
-    const { error } = await _supabase.from('tournament_catalog').insert([tourney]);
-    
-    if (error) {
-        alert("Error: Tournament might already exist with this Name/Day/Hour");
-    } else {
-        document.getElementById('tName').value = "";
-        document.getElementById('tHour').value = "";
-        loadTournaments();
-    }
-}
-
-function updateStaffFee() {
-    const t = tournamentCatalog[document.getElementById('staffSelectTourney').value];
-    if(t) document.getElementById('staffFee').value = t.t_fee;
-}
         function getPayoutRank(p) {
             if (p >= 227) return 128; if (p >= 129) return 64; if (p >= 65) return 32;
             if (p >= 33) return 16; if (p >= 17) return 8; if (p >= 9) return 4; return 2;
         }
         function round10(val) { return Math.round(val / 10) * 10; }
 
-           function generatePayout() {
+        function generatePayout() {
             const t = tournamentCatalog[document.getElementById('staffSelectTourney').value];
+            if(!t) return alert("Select a tournament");
             const p = parseInt(document.getElementById('staffPlayers').value) || 0;
             const factor = parseFloat(document.getElementById('masterFactor').value);
             const tax = (parseFloat(document.getElementById('masterTax').value) || 0) / 100;
             if(p < 4) return alert("Min 4 players");
 
-            const fee = parseFloat(t.t_fee) || 0;
-            const cost = parseFloat(t.t_cost) || 0;
-            const totalTicketsLimit = Math.max(0, (fee - cost) * p * 10);
+            const totalTicketsLimit = Math.max(0, (t.t_fee - t.t_cost) * p * 10);
             const partIndiv = round10((totalTicketsLimit * tax) / p);
             const pool = totalTicketsLimit - (partIndiv * p);
             const payoutRank = getPayoutRank(p);
 
-	let rounds = 3;
-            if (p >= 227) rounds = 9;
-            else if (p >= 129) rounds = 8;
-            else if (p >= 65) rounds = 7;
-            else if (p >= 33) rounds = 6;
-            else if (p >= 17) rounds = 5;
-            else if (p >= 9) rounds = 4;
-
+            let rounds = p >= 227 ? 9 : p >= 129 ? 8 : p >= 65 ? 7 : p >= 33 ? 6 : p >= 9 ? 4 : 3;
             let tiers = [];
             if (payoutRank >= 1) tiers.push({name: "1st Place", count: 1});
             if (payoutRank >= 2) tiers.push({name: "2nd Place", count: 1});
@@ -351,170 +246,68 @@ function updateStaffFee() {
             if (payoutRank >= 32) tiers.push({name: "17th - 32nd", count: 16});
 
             let totalW = 0;
-            for (let i = 0; i < tiers.length; i++) {
-                tiers[i].weight = Math.pow(factor, (tiers.length - 1) - i);
-                totalW += (tiers[i].weight * tiers[i].count);
-            }
+            tiers.forEach((tier, i) => { tier.weight = Math.pow(factor, (tiers.length - 1) - i); totalW += (tier.weight * tier.count); });
             const unit = pool / totalW;
             let currentTotal = (partIndiv * p);
             const body = document.getElementById('payoutBody'); body.innerHTML = "";
-            for (let i = 0; i < tiers.length; i++) {
-                let prize = round10(unit * tiers[i].weight) + partIndiv;
-                body.innerHTML += `<tr><td>${tiers[i].name}</td><td style="font-weight:bold">${prize.toLocaleString()}</td></tr>`;
-                currentTotal += (round10(unit * tiers[i].weight) * tiers[i].count);
-            }
-		body.innerHTML += `<tr style="background:#f9f9f9; font-style:italic"><td>Participation</td><td>${partIndiv.toLocaleString()}</td></tr>`;
+            tiers.forEach(tier => {
+                let prize = round10(unit * tier.weight) + partIndiv;
+                body.innerHTML += `<tr><td>${tier.name}</td><td style="font-weight:bold">${prize.toLocaleString()}</td></tr>`;
+                currentTotal += (round10(unit * tier.weight) * tier.count);
+            });
+            body.innerHTML += `<tr style="background:#f9f9f9; font-style:italic"><td>Participation</td><td>${partIndiv.toLocaleString()}</td></tr>`;
 
             document.getElementById('outEventName').innerText = document.getElementById('masterEvent').value;
             document.getElementById('outTourneyName').innerText = t.name;
             document.getElementById('outLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
             document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${rounds}`;
-
             document.getElementById('printArea').style.display = 'block';
-            document.getElementById('reportArea').style.display = 'none';
-            
-            document.getElementById('printArea').classList.remove('no-print');
-            document.getElementById('reportArea').classList.add('no-print');
 
-         
-            const newData = {
-                id: t.id, 
-                name: t.name, 
-                schedule: `${t.day} - ${t.hour}`, 
-                players: p, 
-                rev: p * t.t_fee, 
-                exp: p * t.t_cost, 
-                tickets: currentTotal
-            };
-
+            const newData = { id: t.id, name: t.name, schedule: `${t.day} - ${t.hour}`, players: p, rev: p * t.t_fee, exp: p * t.t_cost, tickets: currentTotal };
             const existingIndex = historyData.findIndex(h => h.id === t.id);
-            if (existingIndex > -1) {
-                historyData[existingIndex] = newData;
-            } else {
-                historyData.push(newData);
-            }
-            
+            if (existingIndex > -1) historyData[existingIndex] = newData; else historyData.push(newData);
+
             _supabase.from('tournament_history').upsert({
-                event_id: currentEventID,
-                tournament_id: t.id, 
-                tournament_name: t.name,
-                schedule: `${t.day} - ${t.hour}`, 
-                players: p,
-                entry_fee: t.t_fee,
-                costs: t.t_cost,
-                total_tickets: currentTotal
-            }, { onConflict: 'event_id, tournament_id' }) 
-            .then(({ error }) => {
-                if (error) console.error("Erro na nuvem:", error);
-                else console.log("Dados blindados por ID!");
-            });
-
-	function unlockSetup() {
-            document.getElementById('modalSenha').style.display = 'flex';
-            document.getElementById('inputSenhaRetorno').focus();
+                event_id: currentEventID, tournament_id: t.id, tournament_name: t.name, schedule: `${t.day} - ${t.hour}`, 
+                players: p, entry_fee: t.t_fee, costs: t.t_cost, total_tickets: currentTotal
+            }, { onConflict: 'event_id, tournament_id' }).then(({ error }) => { if(!error) console.log("Saved!"); });
         }
 
-        function fecharModal() {
-            document.getElementById('modalSenha').style.display = 'none';
-            document.getElementById('inputSenhaRetorno').value = '';
-        }
-
+        function unlockSetup() { document.getElementById('modalSenha').style.display = 'flex'; document.getElementById('inputSenhaRetorno').focus(); }
+        function fecharModal() { document.getElementById('modalSenha').style.display = 'none'; document.getElementById('inputSenhaRetorno').value = ''; }
         function confirmarRetorno() {
             const masterPass = currentEventID.replace('_LEAD', ''); 
-            const digitado = document.getElementById('inputSenhaRetorno').value.toUpperCase();
-            
-            if(digitado === masterPass) {
-                document.getElementById('setupArea').style.display = 'block';
-                document.getElementById('staffArea').style.display = 'none';
-                fecharModal();
-            } else {
-                alert("ACCESS DENIED");
-                document.getElementById('inputSenhaRetorno').value = '';
-            }
+            if(document.getElementById('inputSenhaRetorno').value.toUpperCase() === masterPass) {
+                document.getElementById('setupArea').style.display = 'block'; document.getElementById('staffArea').style.display = 'none'; fecharModal();
+            } else alert("ACCESS DENIED");
         }
 
         async function removeT(id) { if(confirm("Delete?")) { await _supabase.from('tournament_catalog').delete().eq('id', id); loadTournaments(); } }
         function lockSetup() { document.getElementById('setupArea').style.display='none'; document.getElementById('staffArea').style.display='block'; }
         function resetSystem() { if(confirm("RESET ALL?") && prompt("Type DELETE")==="DELETE") location.reload(); }
-        
-       function showFinalReport() {
-            document.getElementById('dateModal').style.display = 'flex';
-        }
+        function showFinalReport() { document.getElementById('dateModal').style.display = 'flex'; }
+        function closeDateModal() { document.getElementById('dateModal').style.display = 'none'; }
 
-        function closeDateModal() {
-            document.getElementById('dateModal').style.display = 'none';
-        }
-    function finalizeReportWithDate() {
-            const month = document.getElementById('selMonth').value;
-            const dayStart = document.getElementById('selDayStart').value;
-            const dayEnd = document.getElementById('selDayEnd').value;
-            const year = document.getElementById('selYear').value;
-
-            document.getElementById('repEventDate').innerText = `${month} ${dayStart}-${dayEnd}, ${year}`;
-
+        function finalizeReportWithDate() {
+            document.getElementById('repEventDate').innerText = `${document.getElementById('selMonth').value} ${document.getElementById('selDayStart').value}-${document.getElementById('selDayEnd').value}, ${document.getElementById('selYear').value}`;
             const tbody = document.getElementById('reportTableBody');
             const tfoot = document.getElementById('reportFooter');
-            tbody.innerHTML = "";
-            tfoot.innerHTML = "";
-
+            tbody.innerHTML = ""; tfoot.innerHTML = "";
             let totalP = 0, totalRev = 0, totalExp = 0, totalTick = 0;
-
             historyData.forEach(h => {
-                totalP += h.players;
-                totalRev += h.rev;
-                totalExp += h.exp;
-                totalTick += h.tickets;
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${h.name}</td>
-			<td>${h.schedule || '-'}</td>
-                        <td>${h.players}</td>
-                        <td>$${h.rev.toFixed(2)}</td>
-                        <td>$${h.exp.toFixed(2)}</td>
-                        <td>${h.tickets.toLocaleString()}</td>
-                    </tr>`;
+                totalP += h.players; totalRev += h.rev; totalExp += h.exp; totalTick += h.tickets;
+                tbody.innerHTML += `<tr><td>${h.name}</td><td>${h.schedule || '-'}</td><td>${h.players}</td><td>$${h.rev.toFixed(2)}</td><td>$${h.exp.toFixed(2)}</td><td>${h.tickets.toLocaleString()}</td></tr>`;
             });
-
-        tfoot.innerHTML = `
-                <tr class="row-total">
-                    <td colspan="2">TOTALS</td> <td>${totalP}</td>
-                    <td>$${totalRev.toFixed(2)}</td>
-                    <td>$${totalExp.toFixed(2)}</td>
-                    <td>${totalTick.toLocaleString()}</td>
-                </tr>`;
-
+            tfoot.innerHTML = `<tr class="row-total"><td colspan="2">TOTALS</td><td>${totalP}</td><td>$${totalRev.toFixed(2)}</td><td>$${totalExp.toFixed(2)}</td><td>${totalTick.toLocaleString()}</td></tr>`;
             document.getElementById('repEventNameHeader').innerText = document.getElementById('masterEvent').value;
             document.getElementById('repLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
-            
-            
-            document.getElementById('reportArea').classList.remove('no-print');
-            document.getElementById('printArea').classList.add('no-print');
-
-            
-            document.getElementById('dateModal').style.display = 'none';
-            document.getElementById('printArea').style.display = 'none';
-            document.getElementById('reportArea').style.display = 'block';
+            document.getElementById('dateModal').style.display = 'none'; document.getElementById('reportArea').style.display = 'block';
         }
 
-	async function loadHistoryFromCloud() {
-            const { data, error } = await _supabase
-                .from('tournament_history')
-                .select('*')
-                .eq('event_id', currentEventID);
-
-            if (data && data.length > 0) {
-                
-                historyData = data.map(h => ({
-                    id: h.tournament_id, 
-                    name: h.tournament_name,
-                    schedule: h.schedule, 
-                    players: h.players,
-                    rev: h.players * h.entry_fee,
-                    exp: h.players * h.costs,
-                    tickets: h.total_tickets
-                }));
-                console.log("Histórico recuperado da nuvem!");
+        async function loadHistoryFromCloud() {
+            const { data } = await _supabase.from('tournament_history').select('*').eq('event_id', currentEventID);
+            if (data) {
+                historyData = data.map(h => ({ id: h.tournament_id, name: h.tournament_name, schedule: h.schedule, players: h.players, rev: h.players * h.entry_fee, exp: h.players * h.costs, tickets: h.total_tickets }));
             }
         }
     </script>
