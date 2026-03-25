@@ -310,6 +310,14 @@
             const pool = totalTicketsLimit - (partIndiv * p);
             const payoutRank = getPayoutRank(p);
 
+	let rounds = 3;
+            if (p >= 227) rounds = 9;
+            else if (p >= 129) rounds = 8;
+            else if (p >= 65) rounds = 7;
+            else if (p >= 33) rounds = 6;
+            else if (p >= 17) rounds = 5;
+            else if (p >= 9) rounds = 4;
+
             let tiers = [];
             if (payoutRank >= 1) tiers.push({name: "1st Place", count: 1});
             if (payoutRank >= 2) tiers.push({name: "2nd Place", count: 1});
@@ -336,7 +344,7 @@
             document.getElementById('outEventName').innerText = document.getElementById('masterEvent').value;
             document.getElementById('outTourneyName').innerText = t.name;
             document.getElementById('outLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
-            document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee}`;
+            document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${rounds}`;
 
             document.getElementById('printArea').style.display = 'block';
             document.getElementById('reportArea').style.display = 'none';
