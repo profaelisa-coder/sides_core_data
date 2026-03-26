@@ -305,8 +305,20 @@
             .from('payouts')
             .upload(filePath, blob, { upsert: true });
 
-        if (error) console.error("Erro no Storage:", error);
-        else console.log("✅ PDF salvo com sucesso!");
+        if (error) {
+            console.error("Erro no Storage:", error);
+        } else {
+            console.log("✅ PDF salvo com sucesso!");
+            
+            const { data: publicUrlData } = _supabase.storage
+                .from('payouts')
+                .getPublicUrl(filePath);
+
+            const publicUrl = publicUrlData.publicUrl;
+            console.log("🔗 Link do PDF:", publicUrl);
+            
+            window.lastGeneratedPDF = publicUrl;
+        }
     } catch (err) {
         console.error("Erro geral no PDF:", err);
     }
