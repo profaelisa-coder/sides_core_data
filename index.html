@@ -1,5 +1,3 @@
-// BLOCO 1
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +5,6 @@
     <title>Core Prize Manager v3.0 - Royal Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-// BLOCO 2
 
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -38,7 +35,6 @@
         .report-table th:first-child, .report-table td:first-child { text-align: left; padding-left: 10px; }
         .row-total td { border-top: 3px solid var(--dark); border-bottom: none; background: #f9f9f9; font-size: 1.1rem; padding: 15px 10px; color: var(--dark); }
 
-//BLOCO3
 
        @media print { 
             .no-print, #setupArea, #staffArea, #login-area, #emailSetupArea, #modalSenha, #dateModal { 
@@ -68,23 +64,23 @@
         </div>
     </div>
 
-//BLOCO 4 
-    <div id="emailSetupArea" class="no-print" style="display:none; flex-direction:column; align-items:center; justify-content:center; margin-top: 50px;">
-        <div class="admin-panel" style="width:450px; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-bottom: 5px solid var(--green);">
-            <h3 style="margin-top:0; text-align:center; letter-spacing: 1px;">📧 COMMUNICATION SETUP</h3>
-            <div style="margin-top: 25px;">
-                <div class="input-group"><label style="color:var(--gold)">TO Email</label><input type="email" id="toEmail" autocomplete="off" placeholder="organizer@email.com" style="width:96%; margin-bottom:15px; padding:12px;"></div>
-<div class="input-group"><label style="color:var(--gold)">Lead Email</label><input type="email" id="leadEmail" autocomplete="off" placeholder="lead@email.com" style="width:96%; margin-bottom:25px; padding:12px;"></div>
-            </div>
-            <button onclick="saveEmailsAndGo()" style="background:var(--green); color:white; width:100%; padding: 18px; font-size: 1.1rem; border-radius: 8px; box-shadow: 0 4px 0 #1e7066;">START SETUP</button>
-            <p style="color: white; font-size: 0.85rem; margin-top: 30px; line-height: 1.5; text-align: center; font-style: italic; opacity: 0.9; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-                Emails are saved automatically on this device. <br>
-                <strong>If you are using a new computer, please enter them again to proceed.</strong>
-            </p>
-        </div>
-    </div>
 
-// BLOCO 5
+    <div id="emailSetupArea" class="no-print" style="display:none; flex-direction:column; align-items:center; justify-content:center; margin-top: 50px;">
+    <div class="admin-panel" style="width:450px; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-bottom: 5px solid var(--green);">
+        <h3 style="margin-top:0; text-align:center; letter-spacing: 1px;">📧 COMMUNICATION SETUP</h3>
+        
+        <button id="btnQuickSetup" onclick="saveEmailsAndGo()" style="display:none; background:var(--gold); color:var(--dark); width:100%; padding: 15px; margin-bottom: 25px; border-radius: 8px; font-size: 0.9rem; border-bottom: 3px solid #cc9200;">
+            ✨ USAR CONFIGURAÇÃO SALVA
+        </button>
+
+        <div style="margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+            <div class="input-group"><label style="color:var(--gold)">TO Email</label><input type="email" id="toEmail" autocomplete="off" placeholder="organizer@email.com" style="width:96%; margin-bottom:15px; padding:12px;"></div>
+            <div class="input-group"><label style="color:var(--gold)">Lead Email</label><input type="email" id="leadEmail" autocomplete="off" placeholder="lead@email.com" style="width:96%; margin-bottom:25px; padding:12px;"></div>
+        </div>
+        <button onclick="saveEmailsAndGo()" style="background:var(--green); color:white; width:100%; padding: 18px; font-size: 1.1rem; border-radius: 8px; box-shadow: 0 4px 0 #1e7066;">START SETUP</button>
+    </div>
+</div>
+
 
     <div id="setupArea" class="admin-panel no-print" style="display: none;">
         <h3>🛡️ ADMIN SETUP <button onclick="location.reload()" style="font-size: 0.65rem; background: rgba(255,255,255,0.1); color: white; padding: 4px 10px; float: right;">EXIT</button></h3>
@@ -119,7 +115,8 @@
         <button class="btn-reset" onclick="resetSystem()">⚠️ RESET SYSTEM</button>
     </div> <div id="staffArea" class="staff-panel no-print">
   
-// BLOCO 6
+
+
         <h3>🕹️ STAFF OPERATION <button onclick="unlockSetup()" style="font-size:0.6rem; float: right;">Back</button></h3>
         <select id="staffSelectTourney" onchange="updateStaffFee()" style="width:100%; margin-bottom:10px; padding:10px;"></select>
         <div style="display:flex; gap:10px;">
@@ -143,7 +140,7 @@
         <div style="text-align:center; margin-top:20px;" class="no-print"><button onclick="window.print()">🖨️ PRINT</button></div>
     </div>
 
-// BLOCO 7
+
 
     <div id="reportArea" class="report-page">
         <div class="report-header">
@@ -173,7 +170,7 @@
         </div>
     </div>
 
-// BLOCO 8
+
 
     <div id="modalSenha" class="no-print" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
         <div style="background:white; padding:30px; border-radius:12px; text-align:center; width:300px;">
@@ -195,7 +192,7 @@
 	let historyData = [];
 	let emailsConfigured = false;
 
-// BLOCO 9
+
 
 	function saveMasterEvent() {
     	const name = document.getElementById('masterEvent').value;
@@ -203,20 +200,22 @@
     }
 
 function loadSavedEmails() {
-    // Vincula o carregamento ao ID do evento atual para evitar vazamento entre eventos diferentes
     const savedTo = localStorage.getItem('to_' + currentEventID);
     const savedLead = localStorage.getItem('lead_' + currentEventID);
-    if (savedTo) document.getElementById('toEmail').value = savedTo;
-    if (savedLead) document.getElementById('leadEmail').value = savedLead;
-}	
-	function loadMasterEvent() {
-    	const savedName = localStorage.getItem('savedMasterEvent');
-   	 if (savedName) {
-     	   document.getElementById('masterEvent').value = savedName;
-    	}
-     }
+    const btnQuick = document.getElementById('btnQuickSetup');
 
-// BLOCO 10
+    if (savedTo && savedLead) {
+        document.getElementById('toEmail').value = savedTo;
+        document.getElementById('leadEmail').value = savedLead;
+        
+        if(btnQuick) btnQuick.style.display = 'block';
+    } else {
+        
+        if(btnQuick) btnQuick.style.display = 'none';
+    }
+}
+
+
 
 async function checkAccess() {
     const idInput = document.getElementById('event-id-input');
@@ -258,7 +257,7 @@ async function checkAccess() {
     idInput.value = "";
 }
 
-// BLOCO 11
+
 
 function saveEmailsAndGo() {
     const to = document.getElementById('toEmail').value.trim();
@@ -288,7 +287,7 @@ function saveEmailsAndGo() {
     loadHistoryFromCloud();
 }
 
-// BLOCO 12
+
 
 	async function loadTournaments() {
     		const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
@@ -308,7 +307,7 @@ function saveEmailsAndGo() {
     	   updateStaffFee();
 	}
 
-// BLOCO 13
+
 
         async function addTournament() {
     const name = document.getElementById('tName').value.trim();
@@ -343,7 +342,7 @@ function saveEmailsAndGo() {
     }
 }
 
-// BLOCO 14
+
 
         function updateStaffFee() {
             const val = document.getElementById('staffSelectTourney').value;
@@ -392,7 +391,7 @@ function saveEmailsAndGo() {
     } catch (err) { console.error("Erro no PDF:", err); }
 }
 
-// BLOCO 15
+
 
 function generatePayout() {
     const t = tournamentCatalog[document.getElementById('staffSelectTourney').value];
@@ -454,7 +453,7 @@ function generatePayout() {
     }, 4000);
 }
 
-// BLOCO 16
+
 
 function unlockSetup() { document.getElementById('modalSenha').style.display = 'flex'; document.getElementById('inputSenhaRetorno').focus(); }
 function fecharModal() { document.getElementById('modalSenha').style.display = 'none'; document.getElementById('inputSenhaRetorno').value = ''; }
@@ -478,7 +477,7 @@ function resetSystem() {
 }function showFinalReport() { document.getElementById('dateModal').style.display = 'flex'; }
 function closeDateModal() { document.getElementById('dateModal').style.display = 'none'; }
 
-// BLOCO 17
+
 
 function finalizeReportWithDate() {
     document.getElementById('repEventDate').innerText = `${document.getElementById('selMonth').value} ${document.getElementById('selDayStart').value}-${document.getElementById('selDayEnd').value}, ${document.getElementById('selYear').value}`;
@@ -538,7 +537,6 @@ function finalizeReportWithDate() {
     }, 5000); 
 }
 
-// BLOCO 18
 
 async function loadHistoryFromCloud() {
     const { data, error } = await _supabase.from('tournament_history').select('*').eq('event_id', currentEventID);
