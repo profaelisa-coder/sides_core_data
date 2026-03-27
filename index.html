@@ -197,23 +197,13 @@
 
 
 	function saveMasterEvent() {
-    	const name = document.getElementById('masterEvent').value;
-    	localStorage.setItem('savedMasterEvent', name);
-    }
-
-	function loadSavedEmails() {
-    	  const savedTo = localStorage.getItem('to_' + currentEventID);
-    	  const savedLead = localStorage.getItem('lead_' + currentEventID);
-    	  const btnQuick = document.getElementById('btnQuickSetup');
-
-    if (savedTo && savedLead) {
-        document.getElementById('comm_to').value = savedTo;
-        document.getElementById('comm_lead').value = savedLead;
-        if(btnQuick) btnQuick.style.display = 'block';
-    } else {
-        if(btnQuick) btnQuick.style.display = 'none';
-    }
+    const name = document.getElementById('masterEvent').value;
+    localStorage.setItem('savedMasterEvent', name);
 }
+
+function loadSavedEmails() {
+    const savedTo = localStorage.getItem('to_' + currentEventID);
+    const savedLead = localStorage.getItem('lead_' + currentEventID);
 
 
 async function checkAccess() {
@@ -224,14 +214,12 @@ async function checkAccess() {
     const staffRegex = /^[A-Z]{3}\d{2}$/;
 
     if (leadRegex.test(rawId)) {
-        
         tournamentCatalog = [];
         historyData = [];
         emailsConfigured = false;
-        
         currentEventID = rawId;
+        localStorage.setItem('active_event_id', rawId); 
         document.getElementById('login-area').style.display='none';
-        
         loadSavedEmails(); 
         if (!emailsConfigured) {
             document.getElementById('emailSetupArea').style.display='flex';
@@ -247,6 +235,7 @@ async function checkAccess() {
         const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', searchID);
         if(data && data.length > 0) {
             currentEventID = searchID;
+            localStorage.setItem('active_event_id', searchID);
             document.getElementById('login-area').style.display='none';
             document.getElementById('staffArea').style.display='block';
             loadTournaments();
@@ -261,8 +250,7 @@ function saveEmailsAndGo() {
     const to = document.getElementById('comm_to').value.trim();
     const lead = document.getElementById('comm_lead').value.trim();
     
-	if (!to || !lead) {
-        // Tenta buscar no banco local usando o ID do evento atual
+    if (!to || !lead) {
         const savedTo = localStorage.getItem('to_' + currentEventID);
         const savedLead = localStorage.getItem('lead_' + currentEventID);
 
@@ -271,7 +259,6 @@ function saveEmailsAndGo() {
             return;
         }
     } else {
-        // Salva os e-mails vinculados ao ID do evento para não vazar para outros IDs
         localStorage.setItem('to_' + currentEventID, to);
         localStorage.setItem('lead_' + currentEventID, lead);
     }
@@ -339,32 +326,20 @@ function saveEmailsAndGo() {
 }
 
 
-        function updateStaffFee() {
-            const val = document.getElementById('staffSelectTourney').value;
-            const t = tournamentCatalog[val];
-            if(t) document.getElementById('staffFee').value = t.t_fee;
-        }
-
-
-        function getPayoutRank(p) {
-            if (p >= 227) return 128; if (p >= 129) return 64; if (p >= 65) return 32;
-            if (p >= 33) return 16; if (p >= 17) return 8; if (p >= 9) return 4; return 2;
-        }
-        function round10(val) { return Math.round(val / 10) * 10; }
-	
-	async function uploadPDF(elementId, fileName) {
+        async function uploadPDF(elementId, fileName) {
     try {
         const { jsPDF } = window.jspdf;
         const element = document.getElementById(elementId);
-                
         await new Promise(resolve => setTimeout(resolve, 800));
         
         const canvas = await html2canvas(element, { 
-            scale: 2, // Aumenta a qualidade da "foto" para não pixelar
+            scale: 1.5,
             useCORS: true,
             logging: false,
-            backgroundColor: "#ffffff", 
-            windowWidth: 800 
+            backgroundColor: "#ffffff",
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: 850
         });
 
         const imgData = canvas.toDataURL('image/png');
@@ -381,7 +356,7 @@ function saveEmailsAndGo() {
         if (!error) {
             const { data: publicUrlData } = _supabase.storage.from('payouts').getPublicUrl(filePath);
             window.lastGeneratedPDF = publicUrlData.publicUrl;
-            console.log("✅ PDF v5.5 salvo e pronto!");
+            console.log("✅ PDF v5.7 salvo!");
         }
     } catch (err) { console.error("Erro no PDF:", err); }
 }
@@ -448,27 +423,54 @@ function generatePayout() {
 }
 
 
-function unlockSetup() { document.getElementById('modalSenha').style.display = 'flex'; document.getElementById('inputSenhaRetorno').focus(); }
-function fecharModal() { document.getElementById('modalSenha').style.display = 'none'; document.getElementById('inputSenhaRetorno').value = ''; }
+function unlockSetup() { 
+    document.getElementById('modalSenha').style.display = 'flex'; 
+    document.getElementById('inputSenhaRetorno').focus(); 
+}
+
+function fecharModal() { 
+    document.getElementById('modalSenha').style.display = 'none'; 
+    document.getElementById('inputSenhaRetorno').value = ''; 
+}
+
 function confirmarRetorno() {
     const masterPass = currentEventID.replace('_LEAD', '');
     if (document.getElementById('inputSenhaRetorno').value.toUpperCase() === masterPass) {
-        document.getElementById('setupArea').style.display = 'block'; document.getElementById('staffArea').style.display = 'none'; fecharModal();
+        document.getElementById('setupArea').style.display = 'block'; 
+        document.getElementById('staffArea').style.display = 'none'; 
+        fecharModal();
     } else alert("ACCESS DENIED");
 }
 
-async function removeT(id) { if(confirm("Delete?")) { await _supabase.from('tournament_catalog').delete().eq('id', id); loadTournaments(); } }
-function lockSetup() { document.getElementById('setupArea').style.display='none'; document.getElementById('staffArea').style.display='block'; }
+async function removeT(id) { 
+    if(confirm("Delete?")) { 
+        await _supabase.from('tournament_catalog').delete().eq('id', id); 
+        loadTournaments(); 
+    } 
+}
+
+function lockSetup() { 
+    document.getElementById('setupArea').style.display='none'; 
+    document.getElementById('staffArea').style.display='block'; 
+}
+
 function resetSystem() {
     if(confirm("RESET ALL?") && prompt("Type DELETE")==="DELETE") {
-        
         localStorage.removeItem('savedMasterEvent'); 
         localStorage.removeItem('to_' + currentEventID);
         localStorage.removeItem('lead_' + currentEventID);
+        localStorage.removeItem('active_event_id');
         location.reload();
     }
-}function showFinalReport() { document.getElementById('dateModal').style.display = 'flex'; }
-function closeDateModal() { document.getElementById('dateModal').style.display = 'none'; }
+}
+
+function showFinalReport() { 
+    document.getElementById('dateModal').style.display = 'flex'; 
+}
+
+function closeDateModal() { 
+    document.getElementById('dateModal').style.display = 'none'; 
+}
 
 
 function finalizeReportWithDate() {
@@ -550,6 +552,28 @@ async function loadHistoryFromCloud() {
         console.log("Histórico carregado!");
     }
 }
+
+
+window.onload = async () => {
+    const savedID = localStorage.getItem('active_event_id');
+    if (savedID) {
+        // Preenche o campo de input com o ID salvo e tenta o acesso
+        const idInput = document.getElementById('event-id-input');
+        if (idInput) {
+            idInput.value = savedID;
+            await checkAccess();
+            
+            // Se for LEAD, garante que os e-mails e nome do evento carreguem
+            if (savedID.endsWith('_LEAD')) {
+                emailsConfigured = true; 
+                document.getElementById('emailSetupArea').style.display = 'none';
+                document.getElementById('setupArea').style.display = 'block';
+                loadMasterEvent();
+            }
+        }
+    }
+};
+
 </script>
 </body>
 </html>
