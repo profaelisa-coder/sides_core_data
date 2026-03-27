@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <title>Core Prize Manager v3.0 - Royal Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
@@ -35,93 +33,47 @@
         .report-table th:first-child, .report-table td:first-child { text-align: left; padding-left: 10px; }
         .row-total td { border-top: 3px solid var(--dark); border-bottom: none; background: #f9f9f9; font-size: 1.1rem; padding: 15px 10px; color: var(--dark); }
 
+        @media print { 
+            .no-print, #setupArea, #staffArea, #login-area { display: none !important; } 
+            .payout-page, .report-page { box-shadow: none; margin: 0; width: 100%; } 
+            body { background: white; }
+        }
+    </style>
+</head>
+<body>
 
-       @media print { 
-            .no-print, #setupArea, #staffArea, #login-area, #emailSetupArea, #modalSenha, #dateModal { 
-                display: none !important; 
-            } 
-            .payout-page, .report-page { 
-                box-shadow: none; 
-                margin: 0; 
-                width: 100%;
-            } 
-            body { 
-                background: white; 
-            }
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    </head> 
-    <body>
-
-   <div id="login-area" class="no-print">
+    <div id="login-area" class="no-print">
         <div class="login-card" style="background:white; padding:40px; border-radius:15px; text-align:center; width:350px; margin: 80px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
             <h2 style="color: var(--dark);">CORE PRIZE</h2>
-            <input type="password" id="event-id-input" placeholder="ENTER ACCESS CODE" autocomplete="new-password" style="width:100%; margin: 20px 0; text-transform: uppercase; padding:12px; letter-spacing: 4px; text-align: center; border: 1px solid #ddd; border-radius: 8px;">
+            <input type="password" id="event-id-input" placeholder="ENTER ACCESS CODE" style="width:100%; margin: 20px 0; text-transform: uppercase; padding:12px; letter-spacing: 4px; text-align: center; border: 1px solid #ddd; border-radius: 8px;">
             <button onclick="checkAccess()" style="background: var(--dark); color: white; width: 100%;">Access System</button>
         </div>
     </div>
 
-
-    <div id="emailSetupArea" class="no-print" style="display:none; flex-direction:column; align-items:center; justify-content:center; margin-top: 50px;">
-    <div class="admin-panel" style="width:450px; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-bottom: 5px solid var(--green);">
-        <h3 style="margin-top:0; text-align:center; letter-spacing: 1px;">📧 COMMUNICATION SETUP</h3>
-        
-        <button id="btnQuickSetup" onclick="saveEmailsAndGo()" style="display:none; background:var(--gold); color:var(--dark); width:100%; padding: 15px; margin-bottom: 25px; border-radius: 8px; font-size: 0.9rem; border-bottom: 3px solid #cc9200;">
-             USAR CONFIGURAÇÃO SALVA
-        </button>
-
-        <div style="margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-            <div class="input-group">
-                <label style="color:var(--gold)">TO Email</label>
-                <input type="text" id="comm_to" autocomplete="off" placeholder="organizer@email.com" style="width:96%; margin-bottom:15px; padding:12px;">
-            </div>
-            <div class="input-group">
-                <label style="color:var(--gold)">Lead Email</label>
-                <input type="text" id="comm_lead" autocomplete="off" placeholder="lead@email.com" style="width:96%; margin-bottom:25px; padding:12px;">
-            </div>
-        </div>
-        <button onclick="saveEmailsAndGo()" style="background:var(--green); color:white; width:100%; padding: 18px; font-size: 1.1rem; border-radius: 8px; box-shadow: 0 4px 0 #1e7066;">START SETUP</button>
-    </div>
-</div>
-
-
     <div id="setupArea" class="admin-panel no-print" style="display: none;">
         <h3>🛡️ ADMIN SETUP <button onclick="location.reload()" style="font-size: 0.65rem; background: rgba(255,255,255,0.1); color: white; padding: 4px 10px; float: right;">EXIT</button></h3>
         <div class="grid-inputs">
-            <div class="input-group">
-                <label>Event Name</label>
-                <input type="text" id="masterEvent" autocomplete="off" spellcheck="false" oninput="saveMasterEvent()">
-            </div>
+            <div class="input-group"><label>Event Name</label><input type="text" id="masterEvent"></div>
             <div class="input-group"><label>Logo</label><select id="masterLogo"><option value="REGIONAL">REGIONAL</option><option value="IC">IC</option></select></div>
             <div class="input-group"><label>Part. %</label><input type="number" id="masterTax" value="20"></div>
-            <div class="input-group">
-                <label>Spread Factor</label>
-                <select id="masterFactor">
-                    <option value="2.0" selected>2.0</option>
-                    <option value="1.75">1.75</option>
-                    <option value="1.5">1.5</option>
-                </select>
-            </div>
+            <div class="input-group"><label>Spread Factor</label><select id="masterFactor"><option value="2.0">2.0</option><option value="1.75">1.75</option><option value="1.5">1.5</option></select></div>
         </div>
-         <h4>📅 Tournament Catalog</h4>
+        <h4>📅 Tournament Catalog</h4>
         <div class="grid-inputs">
-            <input type="text" id="tName" placeholder="Name" autocomplete="off" spellcheck="false">
+            <input type="text" id="tName" placeholder="Name">
             <input type="text" id="tHour" placeholder="9AM">
             <select id="tDay"><option value="Day 1">Day 1</option><option value="Day 2">Day 2</option><option value="Day 3">Day 3</option></select>
             <input type="number" id="tFee" placeholder="Fee">
             <input type="number" id="tCost" placeholder="Cost">
             <button onclick="addTournament()" style="background:var(--gold);">+ ADD</button>
         </div>
-       <table class="tourney-list" id="catalogTable"><tbody></tbody></table>
+        <table class="tourney-list" id="catalogTable"><tbody></tbody></table>
         <button class="btn-lock" onclick="lockSetup()">🔒 LOCK TO STAFF</button>
         <button class="btn-close-event" onclick="showFinalReport()">📊 GENERATE FINAL REPORT</button>
         <button class="btn-reset" onclick="resetSystem()">⚠️ RESET SYSTEM</button>
-    </div> <div id="staffArea" class="staff-panel no-print">
-  
+    </div>
 
+    <div id="staffArea" class="staff-panel no-print">
         <h3>🕹️ STAFF OPERATION <button onclick="unlockSetup()" style="font-size:0.6rem; float: right;">Back</button></h3>
         <select id="staffSelectTourney" onchange="updateStaffFee()" style="width:100%; margin-bottom:10px; padding:10px;"></select>
         <div style="display:flex; gap:10px;">
@@ -145,435 +97,190 @@
         <div style="text-align:center; margin-top:20px;" class="no-print"><button onclick="window.print()">🖨️ PRINT</button></div>
     </div>
 
-
     <div id="reportArea" class="report-page">
         <div class="report-header">
             <img id="repLogoImg" src="">
             <h1 id="repEventNameHeader"></h1>
-            <h2 id="repEventDate"></h2><h3>FINAL REPORT</h3>
+            <h2 id="repEventDate">March 27-29, 2026</h2>
+            <h3>FINAL REPORT</h3>
         </div>
         <table class="report-table">
             <thead><tr><th>TOURNAMENT</th><th>DAY / HOUR</th><th>PLAYERS</th><th>ENTRY ($)</th><th>COSTS ($)</th><th>TICKETS</th></tr></thead>
             <tbody id="reportTableBody"></tbody>
-            <tfoot id="reportFooter"></tfoot> 
+            <tfoot id="reportFooter"></tfoot>
         </table>
         <div style="text-align:center; margin-top:30px;" class="no-print"><button onclick="window.print()" style="background:var(--primary-red); color:white; padding:15px 30px;">🖨️ PRINT FINAL REPORT</button></div>
     </div>
 
-    <div id="dateModal" class="no-print" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9998; justify-content:center; align-items:center;">
-        <div style="background:white; padding:30px; border-radius:12px; text-align:center; width:450px;">
-            <h3>REPORT DATE SETUP</h3>
-            <div style="display:flex; gap:10px; margin-bottom:20px;">
-                <select id="selMonth"><option value="January">Jan</option><option value="February">Feb</option><option value="March">Mar</option><option value="April">Apr</option><option value="May">May</option><option value="June">Jun</option><option value="July">Jul</option><option value="August">Aug</option><option value="September">Sep</option><option value="October">Oct</option><option value="November">Nov</option><option value="December">Dec</option></select>
-                <input type="number" id="selDayStart" value="1" style="width:60px;">
-                <input type="number" id="selDayEnd" value="3" style="width:60px;">
-                <input type="number" id="selYear" value="2026" style="width:80px;">
-            </div>
-            <button onclick="finalizeReportWithDate()" style="background:var(--green); color:white; padding:12px;">GENERATE</button>
-            <button onclick="closeDateModal()">CANCEL</button>
-        </div>
-    </div>
-
-
-    <div id="modalSenha" class="no-print" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
-        <div style="background:white; padding:30px; border-radius:12px; text-align:center; width:300px;">
-            <h4>ENTER MASTER PASSWORD</h4>
-            <input type="password" id="inputSenhaRetorno" style="width:100%; padding:12px; margin-bottom:15px; text-align:center;">
-            <button onclick="confirmarRetorno()" style="background:var(--dark); color:white;">OK</button>
-            <button onclick="fecharModal()">CANCEL</button>
-        </div>
-    </div>
-
     <script>
-	const supabaseUrl = 'https://hocpoastnlcwgedvcyqs.supabase.co';
-  	const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvY3BvYXN0bmxjd2dlZHZjeXFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODU0MTYsImV4cCI6MjA4OTg2MTQxNn0.1MvvcFsnGW4e0Bj7mzoUKs_3bGM-eHDJTOqsvgKe-pI';
-	const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-	emailjs.init("TuoabYVgJ4AcqMn-p");
+        const supabaseUrl = 'https://hocpoastnlcwgedvcyqs.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvY3BvYXN0bmxjd2dlZHZjeXFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODU0MTYsImV4cCI6MjA4OTg2MTQxNn0.1MvvcFsnGW4e0Bj7mzoUKs_3bGM-eHDJTOqsvgKe-pI';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-	let tournamentCatalog = [];
-	let currentEventID = '';
-	let historyData = [];
-	let emailsConfigured = false;
+        let tournamentCatalog = [];
+        let currentEventID = '';
+        let historyData = [];
 
+        async function checkAccess() {
+            const idInput = document.getElementById('event-id-input');
+            const rawId = idInput.value.trim().toUpperCase();
+            if(!rawId) return;
+            const leadRegex = /^[A-Z]{3}\d{4}_LEAD$/;
+            const staffRegex = /^[A-Z]{3}\d{2}$/;
 
-	function saveMasterEvent() {
-    const name = document.getElementById('masterEvent').value;
-    localStorage.setItem('savedMasterEvent', name);
-}
-
-function loadSavedEmails() {
-    const savedTo = localStorage.getItem('to_' + currentEventID);
-    const savedLead = localStorage.getItem('lead_' + currentEventID);
-
-
-async function checkAccess() {
-    const idInput = document.getElementById('event-id-input');
-    const rawId = idInput.value.trim().toUpperCase();
-    if(!rawId) return;
-    const leadRegex = /^[A-Z]{3}\d{4}_LEAD$/;
-    const staffRegex = /^[A-Z]{3}\d{2}$/;
-
-    if (leadRegex.test(rawId)) {
-        tournamentCatalog = [];
-        historyData = [];
-        emailsConfigured = false;
-        currentEventID = rawId;
-        localStorage.setItem('active_event_id', rawId); 
-        document.getElementById('login-area').style.display='none';
-        loadSavedEmails(); 
-        if (!emailsConfigured) {
-            document.getElementById('emailSetupArea').style.display='flex';
-        } else { 
-            document.getElementById('setupArea').style.display='block'; 
-            loadTournaments(); 
-            loadHistoryFromCloud(); 
+            if (leadRegex.test(rawId)) {
+                currentEventID = rawId;
+                document.getElementById('login-area').style.display='none';
+                document.getElementById('setupArea').style.display='block';
+                loadTournaments();
+                loadHistoryFromCloud();
+            } else if (staffRegex.test(rawId)) {
+                const prefix = rawId.substring(0, 3);
+                const yearShort = rawId.substring(3, 5);
+                const searchID = prefix + "20" + yearShort + "_LEAD";
+                const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', searchID);
+                if(data && data.length > 0) {
+                    currentEventID = searchID;
+                    document.getElementById('login-area').style.display='none';
+                    document.getElementById('staffArea').style.display='block';
+                    loadTournaments();
+                    loadHistoryFromCloud();
+                } else alert("ACCESS DENIED: Event not found.");
+            } else alert("ACCESS DENIED");
+            idInput.value = "";
         }
-    } else if (staffRegex.test(rawId)) {
-        const prefix = rawId.substring(0, 3); 
-        const yearShort = rawId.substring(3, 5); 
-        const searchID = prefix + "20" + yearShort + "_LEAD";
-        const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', searchID);
-        if(data && data.length > 0) {
-            currentEventID = searchID;
-            localStorage.setItem('active_event_id', searchID);
-            document.getElementById('login-area').style.display='none';
-            document.getElementById('staffArea').style.display='block';
-            loadTournaments();
-            loadHistoryFromCloud();
-        } else alert("ACCESS DENIED: Event not found.");
-    } else alert("ACCESS DENIED");
-    idInput.value = "";
-}
 
-
-function saveEmailsAndGo() {
-    const to = document.getElementById('comm_to').value.trim();
-    const lead = document.getElementById('comm_lead').value.trim();
-    
-    if (!to || !lead) {
-        const savedTo = localStorage.getItem('to_' + currentEventID);
-        const savedLead = localStorage.getItem('lead_' + currentEventID);
-
-        if (!savedTo || !savedLead) {
-            alert("NEW DEVICE DETECTED: Please enter the TO and Lead emails to link this computer to the event.");
-            return;
+        async function loadTournaments() {
+            const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
+            tournamentCatalog = data || [];
+            const select = document.getElementById('staffSelectTourney');
+            const tbody = document.querySelector('#catalogTable tbody');
+            select.innerHTML = '<option value="">Select Tournament...</option>';
+            tbody.innerHTML = "";
+            tournamentCatalog.forEach((t, i) => {
+                select.innerHTML += `<option value="${i}">${t.t_hour} - ${t.t_name} (${t.t_day})</option>`;
+                tbody.innerHTML += `<tr><td>${t.t_name} (${t.t_day})</td><td><button onclick="removeT('${t.id}')">❌</button></td></tr>`;
+            });
         }
-    } else {
-        localStorage.setItem('to_' + currentEventID, to);
-        localStorage.setItem('lead_' + currentEventID, lead);
-    }
-
-    emailsConfigured = true;
-    document.getElementById('emailSetupArea').style.display = 'none';
-    document.getElementById('setupArea').style.display = 'block';
-    
-    loadMasterEvent(); 
-    loadTournaments();
-    loadHistoryFromCloud();
-}
-
-
-	async function loadTournaments() {
-    		const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
-    		tournamentCatalog = data || [];
-    		const select = document.getElementById('staffSelectTourney');
-    		const tbody = document.querySelector('#catalogTable tbody');
-
-    		if (select) select.innerHTML = '<option value="">Select Tournament...</option>'; 
-   		if (tbody) tbody.innerHTML = "";
-
-  		  tournamentCatalog.forEach((t, i) => {
-        
-        	if (select) select.innerHTML += `<option value="${i}">${t.t_hour || ''} - ${t.t_name} (${t.t_day || ''})</option>`;
-        
-        	if (tbody) tbody.innerHTML += `<tr><td>${t.t_name} (${t.t_day || ''})</td><td><button onclick="removeT('${t.id}')">❌</button></td></tr>`;
-    		});
-    	   updateStaffFee();
-	}
-
 
         async function addTournament() {
-    const name = document.getElementById('tName').value.trim();
-    const hour = document.getElementById('tHour').value.trim();
-    const day = document.getElementById('tDay').value;
-    const fee = parseFloat(document.getElementById('tFee').value) || 0;
-    const cost = parseFloat(document.getElementById('tCost').value) || 0;
-
-    if (!name) return alert("Enter Name");
-
-    const generatedID = 't_' + Date.now();
-
-    const tourney = { 
-        event_id: currentEventID, 
-        id: generatedID, 
-        t_name: name, 
-        t_hour: hour, 
-        t_day: day, 
-        t_fee: fee, 
-        t_cost: cost 
-    };
-
-    const { error } = await _supabase.from('tournament_catalog').insert([tourney]);
-
-    if (error) {
-        console.error("Erro:", error);
-        alert("Error: " + error.message); 
-    } else {
-        document.getElementById('tName').value = "";
-        document.getElementById('tHour').value = "";
-        loadTournaments();
-    }
-}
-
-
-        async function uploadPDF(elementId, fileName) {
-    try {
-        const { jsPDF } = window.jspdf;
-        const element = document.getElementById(elementId);
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        const canvas = await html2canvas(element, { 
-            scale: 1.5,
-            useCORS: true,
-            logging: false,
-            backgroundColor: "#ffffff",
-            scrollX: 0,
-            scrollY: 0,
-            windowWidth: 850
-        });
-
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        const blob = pdf.output('blob');
-        const filePath = `${currentEventID}/${fileName}.pdf`;
-        
-        const { error } = await _supabase.storage.from('payouts').upload(filePath, blob, { upsert: true });
-        
-        if (!error) {
-            const { data: publicUrlData } = _supabase.storage.from('payouts').getPublicUrl(filePath);
-            window.lastGeneratedPDF = publicUrlData.publicUrl;
-            console.log("✅ PDF v5.7 salvo!");
+            const name = document.getElementById('tName').value.trim();
+            const hour = document.getElementById('tHour').value.trim();
+            const day = document.getElementById('tDay').value;
+            const fee = parseFloat(document.getElementById('tFee').value) || 0;
+            const cost = parseFloat(document.getElementById('tCost').value) || 0;
+            if(!name) return;
+            const { error } = await _supabase.from('tournament_catalog').insert([{ 
+                event_id: currentEventID, t_name: name, t_hour: hour, t_day: day, t_fee: fee, t_cost: cost 
+            }]);
+            if(!error) loadTournaments();
         }
-    } catch (err) { console.error("Erro no PDF:", err); }
-}
 
-
-function generatePayout() {
-    const t = tournamentCatalog[document.getElementById('staffSelectTourney').value];
-    if (!t) return alert("Select a tournament");
-    const p = parseInt(document.getElementById('staffPlayers').value) || 0;
-    const factor = parseFloat(document.getElementById('masterFactor').value);
-    const tax = (parseFloat(document.getElementById('masterTax').value) || 0) / 100;
-    if (p < 4) return alert("Min 4 players");
-    const totalTicketsLimit = Math.max(0, (t.t_fee - t.t_cost) * p * 10);
-    const partIndiv = round10((totalTicketsLimit * tax) / p);
-    const pool = totalTicketsLimit - (partIndiv * p);
-    const payoutRank = getPayoutRank(p);
-    let rounds = p >= 227 ? 9 : p >= 129 ? 8 : p >= 65 ? 7 : p >= 33 ? 6 : p >= 9 ? 4 : 3;
-    let tiers = [];
-    if (payoutRank >= 1) tiers.push({ name: "1st Place", count: 1 });
-    if (payoutRank >= 2) tiers.push({ name: "2nd Place", count: 1 });
-    if (payoutRank >= 4) tiers.push({ name: "3rd - 4th", count: 2 });
-    if (payoutRank >= 8) tiers.push({ name: "5th - 8th", count: 4 });
-    if (payoutRank >= 16) tiers.push({ name: "9th - 16th", count: 8 });
-    if (payoutRank >= 32) tiers.push({ name: "17th - 32nd", count: 16 });
-    let totalW = 0;
-    tiers.forEach((tier, i) => { tier.weight = Math.pow(factor, (tiers.length - 1) - i); totalW += (tier.weight * tier.count); });
-    const unit = pool / totalW;
-    let currentTotal = (partIndiv * p);
-    const body = document.getElementById('payoutBody'); body.innerHTML = "";
-    tiers.forEach(tier => {
-        let prize = round10(unit * tier.weight) + partIndiv;
-        body.innerHTML += `<tr><td>${tier.name}</td><td style="font-weight:bold">${prize.toLocaleString()}</td></tr>`;
-        currentTotal += (round10(unit * tier.weight) * tier.count);
-    });
-    body.innerHTML += `<tr style="background:#f9f9f9; font-style:italic"><td>Participation</td><td>${partIndiv.toLocaleString()}</td></tr>`;
-    document.getElementById('outEventName').innerText = document.getElementById('masterEvent').value;
-    document.getElementById('outTourneyName').innerText = t.t_name;
-    document.getElementById('outLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
-    document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${rounds}`;
-    document.getElementById('printArea').style.display = 'block';
-    document.getElementById('reportArea').style.display = 'none';
-    const newData = { id: t.id, name: t.t_name, schedule: `${t.t_day} - ${t.t_hour}`, players: p, rev: p * t.t_fee, exp: p * t.t_cost, tickets: currentTotal };
-    const existingIndex = historyData.findIndex(h => h.id === t.id);
-
-    if (existingIndex > -1) historyData[existingIndex] = newData; else historyData.push(newData);
-    _supabase.from('tournament_history').upsert({
-        event_id: currentEventID, tournament_id: t.id, tournament_name: t.t_name, schedule: `${t.t_day} - ${t.t_hour}`,
-        players: p, entry_fee: t.t_fee, costs: t.t_cost, total_tickets: currentTotal
-    }, { onConflict: 'event_id, tournament_id' }).then(({ error }) => { if (!error) console.log("Saved!"); });
-
-    uploadPDF('printArea', t.id);
-
-    setTimeout(() => {
-        const leadEmail = document.getElementById('comm_lead').value;
-        if (leadEmail && window.lastGeneratedPDF) {
-            emailjs.send("service_akbhrxt", "template_nv4uolj", {
-                event_name: document.getElementById('masterEvent').value,
-                tournament_name: t.t_name,
-                pdf_link: window.lastGeneratedPDF,
-                to_email: leadEmail
-            }).then(() => console.log("Email sent to Lead!"));
-        }
-    }, 4000);
-}
-
-
-function unlockSetup() { 
-    document.getElementById('modalSenha').style.display = 'flex'; 
-    document.getElementById('inputSenhaRetorno').focus(); 
-}
-
-function fecharModal() { 
-    document.getElementById('modalSenha').style.display = 'none'; 
-    document.getElementById('inputSenhaRetorno').value = ''; 
-}
-
-function confirmarRetorno() {
-    const masterPass = currentEventID.replace('_LEAD', '');
-    if (document.getElementById('inputSenhaRetorno').value.toUpperCase() === masterPass) {
-        document.getElementById('setupArea').style.display = 'block'; 
-        document.getElementById('staffArea').style.display = 'none'; 
-        fecharModal();
-    } else alert("ACCESS DENIED");
-}
-
-async function removeT(id) { 
-    if(confirm("Delete?")) { 
-        await _supabase.from('tournament_catalog').delete().eq('id', id); 
-        loadTournaments(); 
-    } 
-}
-
-function lockSetup() { 
-    document.getElementById('setupArea').style.display='none'; 
-    document.getElementById('staffArea').style.display='block'; 
-}
-
-function resetSystem() {
-    if(confirm("RESET ALL?") && prompt("Type DELETE")==="DELETE") {
-        localStorage.removeItem('savedMasterEvent'); 
-        localStorage.removeItem('to_' + currentEventID);
-        localStorage.removeItem('lead_' + currentEventID);
-        localStorage.removeItem('active_event_id');
-        location.reload();
-    }
-}
-
-function showFinalReport() { 
-    document.getElementById('dateModal').style.display = 'flex'; 
-}
-
-function closeDateModal() { 
-    document.getElementById('dateModal').style.display = 'none'; 
-}
-
-
-function finalizeReportWithDate() {
-    document.getElementById('repEventDate').innerText = `${document.getElementById('selMonth').value} ${document.getElementById('selDayStart').value}-${document.getElementById('selDayEnd').value}, ${document.getElementById('selYear').value}`;
-    
-    const tbody = document.getElementById('reportTableBody');
-    const tfoot = document.getElementById('reportFooter');
-    tbody.innerHTML = ""; 
-    tfoot.innerHTML = "";
-    
-    let totalP = 0, totalRev = 0, totalExp = 0, totalTick = 0;
-    
-    historyData.forEach(h => {
-        totalP += h.players; 
-        totalRev += h.rev; 
-        totalExp += h.exp; 
-        totalTick += h.tickets;
-        tbody.innerHTML += `<tr><td>${h.name}</td><td>${h.schedule || '-'}</td><td>${h.players}</td><td>$${h.rev.toFixed(2)}</td><td>$${h.exp.toFixed(2)}</td><td>${h.tickets.toLocaleString()}</td></tr>`;
-    });
-    
-    tfoot.innerHTML = `<tr class="row-total"><td colspan="2">TOTALS</td><td>${totalP}</td><td>$${totalRev.toFixed(2)}</td><td>$${totalExp.toFixed(2)}</td><td>${totalTick.toLocaleString()}</td></tr>`;
-    
-    document.getElementById('repEventNameHeader').innerText = document.getElementById('masterEvent').value;
-    document.getElementById('repLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
-    document.getElementById('dateModal').style.display = 'none'; 
-    document.getElementById('reportArea').style.display = 'block';
-    document.getElementById('printArea').style.display = 'none';
-    
-    uploadPDF('reportArea', 'FINAL_REPORT_' + currentEventID);
-
-    setTimeout(() => {
-        // ATENÇÃO: IDs atualizados aqui para comm_to e comm_lead
-        const toEmail = document.getElementById('comm_to').value;
-        const leadEmail = document.getElementById('comm_lead').value;
-        
-        if (window.lastGeneratedPDF) {
-            const templateParams = {
-                event_name: document.getElementById('masterEvent').value,
-                report_date: document.getElementById('repEventDate').innerText,
-                pdf_link: window.lastGeneratedPDF,
-                name: "Core Prize System",
-                reply_to: leadEmail || "coreprize.system@outlook.com"
-            };
-
-            if (toEmail) {
-                emailjs.send("service_akbhrxt", "template_ifvvnra", {
-                    ...templateParams,
-                    to_email: toEmail
-                }).then(() => console.log("Final Report sent to TO!"));
-            }
-
-            if (leadEmail) {
-                emailjs.send("service_akbhrxt", "template_ifvvnra", {
-                    ...templateParams,
-                    to_email: leadEmail
-                }).then(() => console.log("Final Report sent to Lead!"));
+        async function removeT(id) {
+            if(confirm("Delete?")) {
+                await _supabase.from('tournament_catalog').delete().eq('id', id);
+                loadTournaments();
             }
         }
-    }, 5000); 
-}
 
+        function updateStaffFee() {
+            const val = document.getElementById('staffSelectTourney').value;
+            const t = tournamentCatalog[val];
+            if(t) document.getElementById('staffFee').value = t.t_fee;
+        }
 
-async function loadHistoryFromCloud() {
-    const { data, error } = await _supabase.from('tournament_history').select('*').eq('event_id', currentEventID);
-    if (error) {
-        console.error("Erro ao carregar histórico:", error);
-        return;
-    }
-    if (data) {
-        historyData = data.map(h => ({ 
-            id: h.tournament_id, 
-            name: h.tournament_name, 
-            schedule: h.schedule, 
-            players: h.players, 
-            rev: h.players * (h.entry_fee || 0), 
-            exp: h.players * (h.costs || 0), 
-            tickets: h.total_tickets 
-        }));
-        console.log("Histórico carregado!");
-    }
-}
+        function getPayoutRank(p) {
+            if (p >= 227) return 128; if (p >= 129) return 64; if (p >= 65) return 32;
+            if (p >= 33) return 16; if (p >= 17) return 8; if (p >= 9) return 4; return 2;
+        }
+        function round10(val) { return Math.round(val / 10) * 10; }
 
+        function generatePayout() {
+            const t = tournamentCatalog[document.getElementById('staffSelectTourney').value];
+            if (!t) return alert("Select a tournament");
+            const p = parseInt(document.getElementById('staffPlayers').value) || 0;
+            const factor = parseFloat(document.getElementById('masterFactor').value);
+            const tax = (parseFloat(document.getElementById('masterTax').value) || 0) / 100;
+            if (p < 4) return alert("Min 4 players");
 
-window.onload = async () => {
-    const savedID = localStorage.getItem('active_event_id');
-    if (savedID) {
-        // Preenche o campo de input com o ID salvo e tenta o acesso
-        const idInput = document.getElementById('event-id-input');
-        if (idInput) {
-            idInput.value = savedID;
-            await checkAccess();
-            
-            // Se for LEAD, garante que os e-mails e nome do evento carreguem
-            if (savedID.endsWith('_LEAD')) {
-                emailsConfigured = true; 
-                document.getElementById('emailSetupArea').style.display = 'none';
-                document.getElementById('setupArea').style.display = 'block';
-                loadMasterEvent();
+            const totalTicketsLimit = Math.max(0, (t.t_fee - t.t_cost) * p * 10);
+            const partIndiv = round10((totalTicketsLimit * tax) / p);
+            const pool = totalTicketsLimit - (partIndiv * p);
+            const payoutRank = getPayoutRank(p);
+
+            let tiers = [];
+            if (payoutRank >= 1) tiers.push({ name: "1st Place", count: 1 });
+            if (payoutRank >= 2) tiers.push({ name: "2nd Place", count: 1 });
+            if (payoutRank >= 4) tiers.push({ name: "3rd - 4th", count: 2 });
+            if (payoutRank >= 8) tiers.push({ name: "5th - 8th", count: 4 });
+            if (payoutRank >= 16) tiers.push({ name: "9th - 16th", count: 8 });
+            if (payoutRank >= 32) tiers.push({ name: "17th - 32nd", count: 16 });
+
+            let totalW = 0;
+            tiers.forEach((tier, i) => { tier.weight = Math.pow(factor, (tiers.length - 1) - i); totalW += (tier.weight * tier.count); });
+            const unit = pool / totalW;
+
+            let currentTotal = (partIndiv * p);
+            const body = document.getElementById('payoutBody'); body.innerHTML = "";
+            tiers.forEach(tier => {
+                let prize = round10(unit * tier.weight) + partIndiv;
+                body.innerHTML += `<tr><td>${tier.name}</td><td>${prize.toLocaleString()}</td></tr>`;
+                currentTotal += (round10(unit * tier.weight) * tier.count);
+            });
+            body.innerHTML += `<tr style="background:#f9f9f9; font-style:italic"><td>Participation</td><td>${partIndiv.toLocaleString()}</td></tr>`;
+
+            document.getElementById('outEventName').innerText = document.getElementById('masterEvent').value;
+            document.getElementById('outTourneyName').innerText = t.t_name;
+            document.getElementById('outLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
+            document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${p >= 227 ? 9 : p >= 129 ? 8 : p >= 65 ? 7 : p >= 33 ? 6 : p >= 9 ? 4 : 3}`;
+            document.getElementById('printArea').style.display = 'block';
+            document.getElementById('reportArea').style.display = 'none';
+
+            const newData = { id: t.id, name: t.t_name, schedule: `${t.t_day} - ${t.t_hour}`, players: p, rev: p * t.t_fee, exp: p * t.t_cost, tickets: currentTotal };
+            const existingIndex = historyData.findIndex(h => h.id === t.id);
+            if (existingIndex > -1) historyData[existingIndex] = newData; else historyData.push(newData);
+            _supabase.from('tournament_history').upsert({
+                event_id: currentEventID, tournament_id: t.id, tournament_name: t.t_name, schedule: `${t.t_day} - ${t.t_hour}`,
+                players: p, entry_fee: t.t_fee, costs: t.t_cost, total_tickets: currentTotal
+            }, { onConflict: 'event_id, tournament_id' }).then(({ error }) => { if (!error) console.log("Saved!"); });
+        }
+
+        function lockSetup() { document.getElementById('setupArea').style.display='none'; document.getElementById('staffArea').style.display='block'; }
+        function unlockSetup() {
+            const pass = prompt("Enter Master Password:");
+            if (pass === currentEventID.replace('_LEAD', '')) {
+                document.getElementById('setupArea').style.display='block';
+                document.getElementById('staffArea').style.display='none';
             }
         }
-    }
-};
 
-</script>
+        function showFinalReport() {
+            const tbody = document.getElementById('reportTableBody');
+            const tfoot = document.getElementById('reportFooter');
+            tbody.innerHTML = ""; tfoot.innerHTML = "";
+            let totalP = 0, totalRev = 0, totalExp = 0, totalTick = 0;
+            historyData.forEach(h => {
+                totalP += h.players; totalRev += h.rev; totalExp += h.exp; totalTick += h.tickets;
+                tbody.innerHTML += `<tr><td>${h.name}</td><td>${h.schedule}</td><td>${h.players}</td><td>$${h.rev.toFixed(2)}</td><td>$${h.exp.toFixed(2)}</td><td>${h.tickets.toLocaleString()}</td></tr>`;
+            });
+            tfoot.innerHTML = `<tr class="row-total"><td colspan="2">TOTALS</td><td>${totalP}</td><td>$${totalRev.toFixed(2)}</td><td>$${totalExp.toFixed(2)}</td><td>${totalTick.toLocaleString()}</td></tr>`;
+            document.getElementById('repEventNameHeader').innerText = document.getElementById('masterEvent').value;
+            document.getElementById('repLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
+            document.getElementById('reportArea').style.display = 'block';
+            document.getElementById('printArea').style.display = 'none';
+        }
+
+        async function loadHistoryFromCloud() {
+            const { data } = await _supabase.from('tournament_history').select('*').eq('event_id', currentEventID);
+            if (data) {
+                historyData = data.map(h => ({ 
+                    id: h.tournament_id, name: h.tournament_name, schedule: h.schedule, players: h.players, 
+                    rev: h.players * h.entry_fee, exp: h.players * h.costs, tickets: h.total_tickets 
+                }));
+            }
+        }
+
+        function resetSystem() { if(confirm("RESET ALL?") && prompt("Type DELETE")==="DELETE") location.reload(); }
+    </script>
 </body>
 </html>
