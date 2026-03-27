@@ -70,12 +70,18 @@
         <h3 style="margin-top:0; text-align:center; letter-spacing: 1px;">📧 COMMUNICATION SETUP</h3>
         
         <button id="btnQuickSetup" onclick="saveEmailsAndGo()" style="display:none; background:var(--gold); color:var(--dark); width:100%; padding: 15px; margin-bottom: 25px; border-radius: 8px; font-size: 0.9rem; border-bottom: 3px solid #cc9200;">
-            ✨ USAR CONFIGURAÇÃO SALVA
+             USAR CONFIGURAÇÃO SALVA
         </button>
 
         <div style="margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-            <div class="input-group"><label style="color:var(--gold)">TO Email</label><input type="email" id="toEmail" autocomplete="off" placeholder="organizer@email.com" style="width:96%; margin-bottom:15px; padding:12px;"></div>
-            <div class="input-group"><label style="color:var(--gold)">Lead Email</label><input type="email" id="leadEmail" autocomplete="off" placeholder="lead@email.com" style="width:96%; margin-bottom:25px; padding:12px;"></div>
+            <div class="input-group">
+                <label style="color:var(--gold)">TO Email</label>
+                <input type="text" id="comm_to" autocomplete="off" placeholder="organizer@email.com" style="width:96%; margin-bottom:15px; padding:12px;">
+            </div>
+            <div class="input-group">
+                <label style="color:var(--gold)">Lead Email</label>
+                <input type="text" id="comm_lead" autocomplete="off" placeholder="lead@email.com" style="width:96%; margin-bottom:25px; padding:12px;">
+            </div>
         </div>
         <button onclick="saveEmailsAndGo()" style="background:var(--green); color:white; width:100%; padding: 18px; font-size: 1.1rem; border-radius: 8px; box-shadow: 0 4px 0 #1e7066;">START SETUP</button>
     </div>
@@ -116,7 +122,6 @@
     </div> <div id="staffArea" class="staff-panel no-print">
   
 
-
         <h3>🕹️ STAFF OPERATION <button onclick="unlockSetup()" style="font-size:0.6rem; float: right;">Back</button></h3>
         <select id="staffSelectTourney" onchange="updateStaffFee()" style="width:100%; margin-bottom:10px; padding:10px;"></select>
         <div style="display:flex; gap:10px;">
@@ -139,7 +144,6 @@
         </table>
         <div style="text-align:center; margin-top:20px;" class="no-print"><button onclick="window.print()">🖨️ PRINT</button></div>
     </div>
-
 
 
     <div id="reportArea" class="report-page">
@@ -171,7 +175,6 @@
     </div>
 
 
-
     <div id="modalSenha" class="no-print" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
         <div style="background:white; padding:30px; border-radius:12px; text-align:center; width:300px;">
             <h4>ENTER MASTER PASSWORD</h4>
@@ -193,28 +196,24 @@
 	let emailsConfigured = false;
 
 
-
 	function saveMasterEvent() {
     	const name = document.getElementById('masterEvent').value;
     	localStorage.setItem('savedMasterEvent', name);
     }
 
-function loadSavedEmails() {
-    const savedTo = localStorage.getItem('to_' + currentEventID);
-    const savedLead = localStorage.getItem('lead_' + currentEventID);
-    const btnQuick = document.getElementById('btnQuickSetup');
+	function loadSavedEmails() {
+    	  const savedTo = localStorage.getItem('to_' + currentEventID);
+    	  const savedLead = localStorage.getItem('lead_' + currentEventID);
+    	  const btnQuick = document.getElementById('btnQuickSetup');
 
     if (savedTo && savedLead) {
-        document.getElementById('toEmail').value = savedTo;
-        document.getElementById('leadEmail').value = savedLead;
-        
+        document.getElementById('comm_to').value = savedTo;
+        document.getElementById('comm_lead').value = savedLead;
         if(btnQuick) btnQuick.style.display = 'block';
     } else {
-        
         if(btnQuick) btnQuick.style.display = 'none';
     }
 }
-
 
 
 async function checkAccess() {
@@ -258,12 +257,11 @@ async function checkAccess() {
 }
 
 
-
 function saveEmailsAndGo() {
-    const to = document.getElementById('toEmail').value.trim();
-    const lead = document.getElementById('leadEmail').value.trim();
-
-    if (!to || !lead) {
+    const to = document.getElementById('comm_to').value.trim();
+    const lead = document.getElementById('comm_lead').value.trim();
+    
+	if (!to || !lead) {
         // Tenta buscar no banco local usando o ID do evento atual
         const savedTo = localStorage.getItem('to_' + currentEventID);
         const savedLead = localStorage.getItem('lead_' + currentEventID);
@@ -288,7 +286,6 @@ function saveEmailsAndGo() {
 }
 
 
-
 	async function loadTournaments() {
     		const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
     		tournamentCatalog = data || [];
@@ -308,7 +305,6 @@ function saveEmailsAndGo() {
 	}
 
 
-
         async function addTournament() {
     const name = document.getElementById('tName').value.trim();
     const hour = document.getElementById('tHour').value.trim();
@@ -318,7 +314,7 @@ function saveEmailsAndGo() {
 
     if (!name) return alert("Enter Name");
 
-    const generatedID = (name + day + hour).toLowerCase().replace(/\s+/g, '');
+    const generatedID = 't_' + Date.now();
 
     const tourney = { 
         event_id: currentEventID, 
@@ -341,7 +337,6 @@ function saveEmailsAndGo() {
         loadTournaments();
     }
 }
-
 
 
         function updateStaffFee() {
@@ -392,7 +387,6 @@ function saveEmailsAndGo() {
 }
 
 
-
 function generatePayout() {
     const t = tournamentCatalog[document.getElementById('staffSelectTourney').value];
     if (!t) return alert("Select a tournament");
@@ -441,7 +435,7 @@ function generatePayout() {
     uploadPDF('printArea', t.id);
 
     setTimeout(() => {
-        const leadEmail = document.getElementById('leadEmail').value;
+        const leadEmail = document.getElementById('comm_lead').value;
         if (leadEmail && window.lastGeneratedPDF) {
             emailjs.send("service_akbhrxt", "template_nv4uolj", {
                 event_name: document.getElementById('masterEvent').value,
@@ -452,7 +446,6 @@ function generatePayout() {
         }
     }, 4000);
 }
-
 
 
 function unlockSetup() { document.getElementById('modalSenha').style.display = 'flex'; document.getElementById('inputSenhaRetorno').focus(); }
@@ -476,7 +469,6 @@ function resetSystem() {
     }
 }function showFinalReport() { document.getElementById('dateModal').style.display = 'flex'; }
 function closeDateModal() { document.getElementById('dateModal').style.display = 'none'; }
-
 
 
 function finalizeReportWithDate() {
@@ -508,8 +500,9 @@ function finalizeReportWithDate() {
     uploadPDF('reportArea', 'FINAL_REPORT_' + currentEventID);
 
     setTimeout(() => {
-        const toEmail = document.getElementById('toEmail').value;
-        const leadEmail = document.getElementById('leadEmail').value;
+        // ATENÇÃO: IDs atualizados aqui para comm_to e comm_lead
+        const toEmail = document.getElementById('comm_to').value;
+        const leadEmail = document.getElementById('comm_lead').value;
         
         if (window.lastGeneratedPDF) {
             const templateParams = {
