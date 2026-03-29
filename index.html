@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v5.6</title>
+    <title>Core Prize Manager v5.5</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -37,7 +37,13 @@
 
        @media print { 
             .no-print, #setupArea, #staffArea, #login-area, #modalSenha { display: none !important; } 
-            .payout-page, .report-page { box-shadow: none; margin: 0; width: 100%; display: block !important; } 
+            .payout-page, .report-page { 
+                box-shadow: none; 
+                margin: 0 auto !important; 
+                width: 180mm !important; 
+                display: block !important; 
+            } 
+            
             body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             table { border: 1px solid #000 !important; width: 100% !important; border-collapse: collapse !important; }
             th, td { border: 1px solid #ddd !important; text-align: center !important; padding: 8px !important; }
@@ -69,7 +75,7 @@
 </head>
 <body>
 
-   <div id="login-area" class="no-print">
+    <div id="login-area" class="no-print">
         <div class="login-card" style="background:white; padding:40px; border-radius:15px; text-align:center; width:350px; margin: 80px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
             <h2 style="color: var(--dark);">CORE PRIZE</h2>
             <input type="password" 
@@ -180,17 +186,27 @@
         let historyData = [];
 
 
-
-        async function checkAccess() {
+async function checkAccess() {
             localStorage.clear(); 
             const idInput = document.getElementById('event-id-input');
             const rawId = idInput.value.trim().toUpperCase();
             if(!rawId) return;
+
             const leadRegex = /^[A-Z]{3}\d{4}_LEAD$/;
             const staffRegex = /^[A-Z]{3}\d{2}$/;
 
             if (leadRegex.test(rawId)) {
                 currentEventID = rawId;
+
+                const { data: hist } = await _supabase.from('tournament_history')
+                    .select('event_name')
+                    .eq('event_id', currentEventID)
+                    .limit(1);
+                
+                if(hist && hist.length > 0) {
+                    document.getElementById('masterEvent').value = hist[0].event_name;
+                }
+
                 document.querySelector('#catalogTable tbody').innerHTML = "";
                 document.getElementById('reportTableBody').innerHTML = "";
                 document.getElementById('login-area').style.display='none';
@@ -198,7 +214,6 @@
                 loadTournaments();
                 loadHistoryFromCloud();
             } else if (staffRegex.test(rawId)) {
-                // Nova Lógica: Busca por prefixo no banco de dados
                 const { data } = await _supabase.from('tournament_catalog')
                     .select('event_id')
                     .like('event_id', rawId + '%')
@@ -218,7 +233,6 @@
             }
             idInput.value = "";
         }
-
 
 
       async function loadTournaments() {
@@ -376,23 +390,36 @@
         }
 
         function showFinalReport() {
+            const eventName = document.getElementById('masterEvent').value;
+            const selectedLogo = document.getElementById('masterLogo').value;
+            const logoSrc = selectedLogo === "REGIONAL" ? "reg.PNG" : "ic.png";
+
+            document.getElementById('repEventNameHeader').innerText = eventName;
+            document.getElementById('outEventName').innerText = eventName;
+            document.getElementById('repLogoImg').src = logoSrc;
+            document.getElementById('outLogoImg').src = logoSrc;
+
             const tbody = document.getElementById('reportTableBody');
             const tfoot = document.getElementById('reportFooter');
             tbody.innerHTML = ""; 
             tfoot.innerHTML = "";
+            
             let totalP = 0, totalRev = 0, totalExp = 0, totalTick = 0;
+            
             historyData.forEach(h => {
-                totalP += h.players; totalRev += h.rev; totalExp += h.exp; totalTick += h.tickets;
+                totalP += h.players; 
+                totalRev += h.rev; 
+                totalExp += h.exp; 
+                totalTick += h.tickets;
                 tbody.innerHTML += `<tr><td>${h.name}</td><td>${h.schedule}</td><td>${h.players}</td><td>$${h.rev.toFixed(2)}</td><td>$${h.exp.toFixed(2)}</td><td>${h.tickets.toLocaleString()}</td></tr>`;
             });
+
             tfoot.innerHTML = `<tr class="row-total"><td colspan="2">TOTALS</td><td>${totalP}</td><td>$${totalRev.toFixed(2)}</td><td>$${totalExp.toFixed(2)}</td><td>${totalTick.toLocaleString()}</td></tr>`;
-            document.getElementById('repEventNameHeader').innerText = document.getElementById('masterEvent').value;
-            document.getElementById('repLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
+            
             document.getElementById('modalSenha').style.display = 'none'; 
             document.getElementById('reportArea').style.display = 'block';
             document.getElementById('printArea').style.display = 'none';
         }
-
 
 
        async function loadHistoryFromCloud() {
