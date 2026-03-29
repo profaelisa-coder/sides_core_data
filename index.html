@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v5.9.5</title>
+    <title>Core Prize Manager v5.9.1</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -180,23 +180,37 @@
                 document.getElementById('reportTableBody').innerHTML = "";
                 document.getElementById('login-area').style.display = 'none';
                 document.getElementById('setupArea').style.display = 'block';
-                await loadTournaments();
+                
+	        await loadTournaments();
                 await loadHistoryFromCloud();
-            } else if (staffRegex.test(rawId)) {
-                const { data } = await _supabase.from('tournament_catalog').select('event_id').like('event_id', rawId + '%').limit(1);
+	   } else if (staffRegex.test(rawId)) {
+                const prefix = rawId.substring(0, 3);
+                const suffix = rawId.substring(3);
+
+                const { data } = await _supabase.from('tournament_catalog')
+                    .select('event_id')
+                    .like('event_id', prefix + '%' + suffix + '_LEAD')
+                    .limit(1);
+
                 if(data && data.length > 0) {
                     currentEventID = data[0].event_id;
                     await syncEventConfig(currentEventID);
-                    document.getElementById('login-area').style.display = 'none';
-                    document.getElementById('staffArea').style.display = 'block';
-                    await loadTournaments();
-                    await loadHistoryFromCloud();
-                } else { alert("ACCESS DENIED: Event not found."); }
-            } else { alert("ACCESS DENIED"); }
-            idInput.value = "";
-        }
 
-        async function loadTournaments() {
+                    document.getElementById('login-area').style.display='none';
+                    document.getElementById('staffArea').style.display='block';
+                    await loadTournaments(); 
+            	    await loadHistoryFromCloud()
+                } else {
+                    alert("ACCESS DENIED: Event not found.");
+                }
+            } else {
+                alert("ACCESS DENIED");
+            }
+	idInput.value = "";
+   }
+        
+
+	async function loadTournaments() {
             const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
             tournamentCatalog = data || [];
             const select = document.getElementById('staffSelectTourney');
