@@ -34,6 +34,7 @@
         .row-total td { border-top: 3px solid var(--dark); border-bottom: none; background: #f9f9f9; font-size: 1.1rem; padding: 15px 10px; color: var(--dark); }
 
 
+
        @media print { 
             .no-print, #setupArea, #staffArea, #login-area, #modalSenha { display: none !important; } 
             .payout-page, .report-page { 
@@ -343,6 +344,7 @@ async function checkAccess() {
             const unit = pool / totalW;
 
 
+
            let currentTotal = (partIndiv * p);
             const body = document.getElementById('payoutBody'); 
             body.innerHTML = ""; 
@@ -494,3 +496,6 @@ async function checkAccess() {
                 logo_type: logoType
             }, { onConflict: 'event_id, tournament_id' });
         }
+	</script>
+</body>
+</html>
