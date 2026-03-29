@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v5.9.4</title>
+    <title>Core Prize Manager v5.9.5</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -35,8 +35,8 @@
 
         @media print { 
             .no-print, #setupArea, #staffArea, #login-area, #modalSenha, button { display: none !important; } 
-            #printArea { display: none !important; }
-            #reportArea { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
+            #reportArea:not([style*="display: block"]) { display: none !important; }
+            #printArea:not([style*="display: block"]) { display: none !important; }
             body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             table { border: 1px solid #000 !important; width: 100% !important; border-collapse: collapse !important; }
             th, td { border: 1px solid #ddd !important; text-align: center !important; padding: 8px !important; }
@@ -208,7 +208,8 @@
                 if (tbody) tbody.innerHTML += `<tr><td>${t.t_name} (${t.t_day})</td><td><button onclick="removeT('${t.id}')">❌</button></td></tr>`;
             });
         }
-    async function addTournament() {
+
+        async function addTournament() {
             const name = document.getElementById('tName').value.trim();
             const hour = document.getElementById('tHour').value.trim();
             const day = document.getElementById('tDay').value;
@@ -276,8 +277,8 @@
             document.getElementById('outTourneyName').innerText = t.t_name;
             document.getElementById('outLogoImg').src = logoType === "REGIONAL" ? "reg.PNG" : "ic.png";
             document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${p >= 33 ? 6 : 4}`;
-            document.getElementById('printArea').style.display = 'block';
             document.getElementById('reportArea').style.display = 'none';
+            document.getElementById('printArea').style.display = 'block';
             let payload = { event_id: currentEventID, tournament_id: t.id, tournament_name: t.t_name, schedule: `${t.t_day} - ${t.t_hour}`, players: p, entry_fee: t.t_fee, costs: t.t_cost, total_tickets: currentTotal };
             if (eventName) payload.event_name = eventName;
             if (logoType) payload.logo_type = logoType;
@@ -298,9 +299,6 @@
 
         async function showFinalReport() {
             document.getElementById('payoutBody').innerHTML = "";
-            document.getElementById('outEventName').innerText = "";
-            document.getElementById('outTourneyName').innerText = "";
-            document.getElementById('outDetails').innerText = "";
             document.getElementById('printArea').style.display = 'none';
             await loadHistoryFromCloud();
             const eventName = document.getElementById('masterEvent').value || "EVENT REPORT";
@@ -310,10 +308,14 @@
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = "";
             let tP = 0, tR = 0, tE = 0, tT = 0;
-            historyData.forEach(h => {
-                tP += h.players; tR += h.rev; tE += h.exp; tT += h.tickets;
-                tbody.innerHTML += `<tr><td>${h.name}</td><td>${h.schedule}</td><td>${h.players}</td><td>$${h.rev.toFixed(2)}</td><td>$${h.exp.toFixed(2)}</td><td>${h.tickets.toLocaleString()}</td></tr>`;
-            });
+            if (historyData.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='6'>NO DATA FOUND</td></tr>";
+            } else {
+                historyData.forEach(h => {
+                    tP += h.players; tR += h.rev; tE += h.exp; tT += h.tickets;
+                    tbody.innerHTML += `<tr><td>${h.name}</td><td>${h.schedule}</td><td>${h.players}</td><td>$${h.rev.toFixed(2)}</td><td>$${h.exp.toFixed(2)}</td><td>${h.tickets.toLocaleString()}</td></tr>`;
+                });
+            }
             document.getElementById('reportFooter').innerHTML = `<tr class="row-total"><td colspan="2">TOTALS</td><td>${tP}</td><td>$${tR.toFixed(2)}</td><td>$${tE.toFixed(2)}</td><td>${tT.toLocaleString()}</td></tr>`;
             document.getElementById('reportArea').style.display = 'block';
             window.scrollTo(0, document.body.scrollHeight);
@@ -323,9 +325,7 @@
             const { data } = await _supabase.from('tournament_history').select('*').eq('event_id', currentEventID).neq('tournament_id', 'IDENTITY_ANCHOR');
             if (data) { historyData = data.map(h => ({ id: h.tournament_id, name: h.tournament_name, schedule: h.schedule, players: h.players, rev: h.players * h.entry_fee, exp: h.players * h.costs, tickets: h.total_tickets })); }
         }
-
         function resetSystem() { if(confirm("RESET ALL DATA?") && prompt("Type DELETE to confirm") === "DELETE") { localStorage.clear(); location.reload(); } }
-
         async function saveEventIdentity() {
             const eventName = document.getElementById('masterEvent').value;
             const logoType = document.getElementById('masterLogo').value;
