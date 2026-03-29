@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v5.5</title>
+    <title>Core Prize Manager v5.8</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -186,6 +186,7 @@
         let historyData = [];
 
 
+
 async function checkAccess() {
             localStorage.clear(); 
             const idInput = document.getElementById('event-id-input');
@@ -195,17 +196,24 @@ async function checkAccess() {
             const leadRegex = /^[A-Z]{3}\d{4}_LEAD$/;
             const staffRegex = /^[A-Z]{3}\d{2}$/;
 
-            if (leadRegex.test(rawId)) {
-                currentEventID = rawId;
-
-                const { data: hist } = await _supabase.from('tournament_history')
-                    .select('event_name')
-                    .eq('event_id', currentEventID)
+            const syncEventConfig = async (targetID) => {
+                const { data: config } = await _supabase.from('tournament_history')
+                    .select('event_name, logo_type')
+                    .eq('event_id', targetID)
+                    .order('created_at', { ascending: false })
                     .limit(1);
                 
-                if(hist && hist.length > 0) {
-                    document.getElementById('masterEvent').value = hist[0].event_name;
+                if(config && config.length > 0) {
+                    document.getElementById('masterEvent').value = config[0].event_name || "";
+                    if(config[0].logo_type) {
+                        document.getElementById('masterLogo').value = config[0].logo_type;
+                    }
                 }
+            };
+
+            if (leadRegex.test(rawId)) {
+                currentEventID = rawId;
+                await syncEventConfig(currentEventID);
 
                 document.querySelector('#catalogTable tbody').innerHTML = "";
                 document.getElementById('reportTableBody').innerHTML = "";
@@ -221,6 +229,8 @@ async function checkAccess() {
 
                 if(data && data.length > 0) {
                     currentEventID = data[0].event_id;
+                    await syncEventConfig(currentEventID);
+
                     document.getElementById('login-area').style.display='none';
                     document.getElementById('staffArea').style.display='block';
                     loadTournaments();
@@ -233,6 +243,7 @@ async function checkAccess() {
             }
             idInput.value = "";
         }
+
 
 
       async function loadTournaments() {
@@ -330,6 +341,9 @@ async function checkAccess() {
             const body = document.getElementById('payoutBody'); 
             body.innerHTML = ""; 
 
+            const eventName = document.getElementById('masterEvent').value;
+            const logoType = document.getElementById('masterLogo').value;
+
             tiers.forEach(tier => {
                 let prize = round10(unit * tier.weight) + partIndiv;
                 body.innerHTML += `<tr><td>${tier.name}</td><td>${prize.toLocaleString()}</td></tr>`;
@@ -337,9 +351,9 @@ async function checkAccess() {
             });
             body.innerHTML += `<tr style="background:#f9f9f9; font-style:italic"><td>Participation</td><td>${partIndiv.toLocaleString()}</td></tr>`;
 
-            document.getElementById('outEventName').innerText = document.getElementById('masterEvent').value;
+            document.getElementById('outEventName').innerText = eventName;
             document.getElementById('outTourneyName').innerText = t.t_name;
-            document.getElementById('outLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
+            document.getElementById('outLogoImg').src = logoType === "REGIONAL" ? "reg.PNG" : "ic.png";
             
             let rounds = p >= 227 ? 9 : p >= 129 ? 8 : p >= 65 ? 7 : p >= 33 ? 6 : p >= 9 ? 4 : 3;
             document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${rounds}`;
@@ -353,6 +367,8 @@ async function checkAccess() {
             _supabase.from('tournament_history').upsert({
                 event_id: currentEventID, 
                 tournament_id: t.id, 
+                event_name: eventName,
+                logo_type: logoType,
                 tournament_name: t.t_name, 
                 schedule: `${t.t_day} - ${t.t_hour}`,
                 players: p, 
@@ -366,7 +382,7 @@ async function checkAccess() {
 
 
 
-      function lockSetup() { 
+     function lockSetup() { 
             document.getElementById('setupArea').style.display = 'none'; 
             document.getElementById('staffArea').style.display = 'block'; 
         }
@@ -390,7 +406,7 @@ async function checkAccess() {
         }
 
         function showFinalReport() {
-            const eventName = document.getElementById('masterEvent').value;
+            const eventName = document.getElementById('masterEvent').value || "EVENT NAME NOT SET";
             const selectedLogo = document.getElementById('masterLogo').value;
             const logoSrc = selectedLogo === "REGIONAL" ? "reg.PNG" : "ic.png";
 
@@ -401,25 +417,32 @@ async function checkAccess() {
 
             const tbody = document.getElementById('reportTableBody');
             const tfoot = document.getElementById('reportFooter');
+            
             tbody.innerHTML = ""; 
             tfoot.innerHTML = "";
             
             let totalP = 0, totalRev = 0, totalExp = 0, totalTick = 0;
             
-            historyData.forEach(h => {
-                totalP += h.players; 
-                totalRev += h.rev; 
-                totalExp += h.exp; 
-                totalTick += h.tickets;
-                tbody.innerHTML += `<tr><td>${h.name}</td><td>${h.schedule}</td><td>${h.players}</td><td>$${h.rev.toFixed(2)}</td><td>$${h.exp.toFixed(2)}</td><td>${h.tickets.toLocaleString()}</td></tr>`;
-            });
+            if (historyData.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='6'>NO DATA FOUND FOR THIS EVENT</td></tr>";
+            } else {
+                historyData.forEach(h => {
+                    totalP += h.players; 
+                    totalRev += h.rev; 
+                    totalExp += h.exp; 
+                    totalTick += h.tickets;
+                    tbody.innerHTML += `<tr><td>${h.name}</td><td>${h.schedule}</td><td>${h.players}</td><td>$${h.rev.toFixed(2)}</td><td>$${h.exp.toFixed(2)}</td><td>${h.tickets.toLocaleString()}</td></tr>`;
+                });
+                tfoot.innerHTML = `<tr class="row-total"><td colspan="2">TOTALS</td><td>${totalP}</td><td>$${totalRev.toFixed(2)}</td><td>$${totalExp.toFixed(2)}</td><td>${totalTick.toLocaleString()}</td></tr>`;
+            }
 
-            tfoot.innerHTML = `<tr class="row-total"><td colspan="2">TOTALS</td><td>${totalP}</td><td>$${totalRev.toFixed(2)}</td><td>$${totalExp.toFixed(2)}</td><td>${totalTick.toLocaleString()}</td></tr>`;
-            
             document.getElementById('modalSenha').style.display = 'none'; 
-            document.getElementById('reportArea').style.display = 'block';
             document.getElementById('printArea').style.display = 'none';
+            document.getElementById('reportArea').style.display = 'block';
+            
+            window.scrollTo(0, document.body.scrollHeight);
         }
+
 
 
        async function loadHistoryFromCloud() {
