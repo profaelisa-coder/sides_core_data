@@ -162,28 +162,15 @@
             const idInput = document.getElementById('event-id-input');
             const rawId = idInput.value.trim().toUpperCase();
             if(!rawId) return;
-
             const leadRegex = /^[A-Z]{3}\d{4}_LEAD$/;
             const staffRegex = /^[A-Z]{3}\d{2}$/;
-
             const syncEventConfig = async (targetID) => {
-                const { data: config } = await _supabase.from('tournament_history')
-                    .select('event_name, logo_type')
-                    .eq('event_id', targetID)
-                    .neq('tournament_id', 'IDENTITY_ANCHOR')
-                    .order('created_at', { ascending: false });
-                
+                const { data: config } = await _supabase.from('tournament_history').select('event_name, logo_type').eq('event_id', targetID).neq('tournament_id', 'IDENTITY_ANCHOR').order('created_at', { ascending: false });
                 let finalConfig = config && config.length > 0 ? config[0] : null;
-
                 if(!finalConfig) {
-                    const { data: anchor } = await _supabase.from('tournament_history')
-                        .select('event_name, logo_type')
-                        .eq('event_id', targetID)
-                        .eq('tournament_id', 'IDENTITY_ANCHOR')
-                        .limit(1);
+                    const { data: anchor } = await _supabase.from('tournament_history').select('event_name, logo_type').eq('event_id', targetID).eq('tournament_id', 'IDENTITY_ANCHOR').limit(1);
                     if(anchor && anchor.length > 0) finalConfig = anchor[0];
                 }
-
                 if(finalConfig) {
                     document.getElementById('masterEvent').value = finalConfig.event_name || "";
                     document.getElementById('masterLogo').value = finalConfig.logo_type || "REGIONAL";
@@ -191,7 +178,6 @@
                     document.getElementById('repEventNameHeader').innerText = finalConfig.event_name || "";
                 }
             };
-
             if (leadRegex.test(rawId)) {
                 currentEventID = rawId;
                 await syncEventConfig(currentEventID);
@@ -267,12 +253,10 @@
             const factor = parseFloat(document.getElementById('masterFactor').value) || 2.0;
             const tax = (parseFloat(document.getElementById('masterTax').value) || 0) / 100;
             if (p < 4) return alert("Minimum 4 players required.");
-
             const totalTicketsLimit = Math.max(0, (t.t_fee - t.t_cost) * p * 10);
             const partIndiv = round10((totalTicketsLimit * tax) / p);
             const pool = totalTicketsLimit - (partIndiv * p);
             const payoutRank = getPayoutRank(p);
-
             let tiers = [];
             if (payoutRank >= 1) tiers.push({ name: "1st Place", count: 1 });
             if (payoutRank >= 2) tiers.push({ name: "2nd Place", count: 1 });
@@ -280,31 +264,29 @@
             if (payoutRank >= 8) tiers.push({ name: "5th - 8th", count: 4 });
             if (payoutRank >= 16) tiers.push({ name: "9th - 16th", count: 8 });
             if (payoutRank >= 32) tiers.push({ name: "17th - 32nd", count: 16 });
-
             let totalW = 0;
             tiers.forEach((tier, i) => { tier.weight = Math.pow(factor, (tiers.length - 1) - i); totalW += (tier.weight * tier.count); });
             const unit = pool / totalW;
-
             let currentTotal = (partIndiv * p);
             const body = document.getElementById('payoutBody'); 
             body.innerHTML = ""; 
             const eventName = document.getElementById('masterEvent').value;
             const logoType = document.getElementById('masterLogo').value;
-
             tiers.forEach(tier => {
                 let prize = round10(unit * tier.weight) + partIndiv;
                 body.innerHTML += `<tr><td>${tier.name}</td><td>${prize.toLocaleString()}</td></tr>`;
                 currentTotal += (round10(unit * tier.weight) * tier.count);
             });
             body.innerHTML += `<tr style="background:#f9f9f9; font-style:italic"><td>Participation</td><td>${partIndiv.toLocaleString()}</td></tr>`;
-
             document.getElementById('outEventName').innerText = eventName;
             document.getElementById('outTourneyName').innerText = t.t_name;
             document.getElementById('outLogoImg').src = logoType === "REGIONAL" ? "reg.PNG" : "ic.png";
             document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${p >= 33 ? 6 : 4}`;
             document.getElementById('printArea').style.display = 'block';
             document.getElementById('reportArea').style.display = 'none';
-
+            const newData = { id: t.id, name: t.t_name, schedule: `${t.t_day} - ${t.t_hour}`, players: p, rev: p * t.t_fee, exp: p * t.t_cost, tickets: currentTotal };
+            const existingIndex = historyData.findIndex(h => h.id === t.id);
+            if (existingIndex > -1) historyData[existingIndex] = newData; else historyData.push(newData);
             let payload = { event_id: currentEventID, tournament_id: t.id, tournament_name: t.t_name, schedule: `${t.t_day} - ${t.t_hour}`, players: p, entry_fee: t.t_fee, costs: t.t_cost, total_tickets: currentTotal };
             if (eventName) payload.event_name = eventName;
             if (logoType) payload.logo_type = logoType;
@@ -313,7 +295,6 @@
 
         function lockSetup() { document.getElementById('setupArea').style.display = 'none'; document.getElementById('staffArea').style.display = 'block'; }
         function unlockSetup() { document.getElementById('modalSenha').style.display = 'flex'; document.getElementById('passUnlock').value = ""; document.getElementById('passUnlock').focus(); }
-        
         function confirmUnlock() { 
             const pass = document.getElementById('passUnlock').value; 
             if (pass && pass.toUpperCase() === currentEventID.replace('_LEAD', '')) { 
@@ -323,15 +304,13 @@
             } else { alert("ACCESS DENIED"); }
         }
 
-        async function showFinalReport() {
+        function showFinalReport() {
             document.getElementById('payoutBody').innerHTML = "";
             document.getElementById('printArea').style.display = 'none';
-            await loadHistoryFromCloud();
-            const eventName = document.getElementById('masterEvent').value || "EVENT NAME NOT SET";
+            const eventName = document.getElementById('masterEvent').value || "EVENT REPORT";
             const logoSrc = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
             document.getElementById('repEventNameHeader').innerText = eventName;
             document.getElementById('repLogoImg').src = logoSrc;
-
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = "";
             let tP = 0, tR = 0, tE = 0, tT = 0;
@@ -345,7 +324,7 @@
         }
 
         async function loadHistoryFromCloud() {
-            const { data } = await _supabase.from('tournament_history').select('*').eq('event_id', currentEventID);
+            const { data } = await _supabase.from('tournament_history').select('*').eq('event_id', currentEventID).neq('tournament_id', 'IDENTITY_ANCHOR');
             if (data) { historyData = data.map(h => ({ id: h.tournament_id, name: h.tournament_name, schedule: h.schedule, players: h.players, rev: h.players * h.entry_fee, exp: h.players * h.costs, tickets: h.total_tickets })); }
         }
 
