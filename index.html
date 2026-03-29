@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v5.9</title>
+    <title>Core Prize Manager v5.9.1</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -33,9 +33,7 @@
         .report-table th:first-child, .report-table td:first-child { text-align: left; padding-left: 10px; }
         .row-total td { border-top: 3px solid var(--dark); border-bottom: none; background: #f9f9f9; font-size: 1.1rem; padding: 15px 10px; color: var(--dark); }
 
-
-
-       @media print { 
+        @media print { 
             .no-print, #setupArea, #staffArea, #login-area, #modalSenha { display: none !important; } 
             .payout-page, .report-page { 
                 box-shadow: none; 
@@ -43,7 +41,6 @@
                 width: 180mm !important; 
                 display: block !important; 
             } 
-            
             body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             table { border: 1px solid #000 !important; width: 100% !important; border-collapse: collapse !important; }
             th, td { border: 1px solid #ddd !important; text-align: center !important; padding: 8px !important; }
@@ -51,26 +48,11 @@
         }
 
         #modalSenha {
-            display: none; 
-            position: fixed; 
-            z-index: 9999; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.8); 
-            align-items: center; 
-            justify-content: center;
+            display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); align-items: center; justify-content: center;
         }
 
-        .modal-content { 
-            background: white; 
-            padding: 30px; 
-            border-radius: 12px; 
-            text-align: center; 
-            width: 300px; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; text-align: center; width: 300px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
@@ -78,20 +60,12 @@
     <div id="login-area" class="no-print">
         <div class="login-card" style="background:white; padding:40px; border-radius:15px; text-align:center; width:350px; margin: 80px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
             <h2 style="color: var(--dark);">CORE PRIZE</h2>
-            <input type="password" 
-                   id="event-id-input" 
-                   name="event-access-secure-field" 
-                   autocomplete="off" 
-                   placeholder="ENTER ACCESS CODE" 
-                   spellcheck="false" 
-                   style="width:100%; margin: 20px 0; text-transform: uppercase; padding:12px; letter-spacing: 4px; text-align: center; border: 1px solid #ddd; border-radius: 8px;">
+            <input type="password" id="event-id-input" name="event-access-secure-field" autocomplete="off" placeholder="ENTER ACCESS CODE" spellcheck="false" style="width:100%; margin: 20px 0; text-transform: uppercase; padding:12px; letter-spacing: 4px; text-align: center; border: 1px solid #ddd; border-radius: 8px;">
             <button onclick="checkAccess()" style="background: var(--dark); color: white; width: 100%;">Access System</button>
         </div>
     </div>
 
-
-
-  <div id="setupArea" class="admin-panel no-print" style="display: none;">
+    <div id="setupArea" class="admin-panel no-print" style="display: none;">
         <h3>🛡️ ADMIN SETUP <button onclick="location.reload()" style="font-size: 0.65rem; background: rgba(255,255,255,0.1); color: white; padding: 4px 10px; float: right;">EXIT</button></h3>
         <div class="grid-inputs">
             <div class="input-group">
@@ -120,13 +94,9 @@
         <table class="tourney-list" id="catalogTable"><tbody></tbody></table>
         <button class="btn-lock" onclick="lockSetup()">🔒 LOCK TO STAFF</button>
         <button class="btn-close-event" onclick="showFinalReport()">📊 GENERATE FINAL REPORT</button>
-        
-        <button class="btn-reset" id="btnEmailFuturo" onclick="alert('Email system coming soon in next version!')" style="margin-top: 10px; background: var(--gold); color: #1d3557;">📧 EMAIL FINAL REPORT (Coming Soon)</button>
-        
+        <button class="btn-reset" id="btnEmailFuturo" onclick="alert('Email system coming soon!')" style="margin-top: 10px; background: var(--gold); color: #1d3557;">📧 EMAIL FINAL REPORT (Coming Soon)</button>
         <button class="btn-reset" onclick="resetSystem()">⚠️ RESET SYSTEM</button>
     </div>
-
-
 
     <div id="staffArea" class="staff-panel no-print">
         <h3>🕹️ STAFF OPERATION <button onclick="unlockSetup()" style="font-size:0.6rem; float: right;">Back</button></h3>
@@ -156,16 +126,13 @@
         <div class="modal-content">
             <h4 style="color:var(--dark); margin-top:0;">Master Access</h4>
             <p style="font-size:0.8rem; color:#666;">Enter password to unlock Setup</p>
-            <input type="password" id="passUnlock" placeholder="••••" autocomplete="new-password" 
-                   style="width:100%; padding:12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; text-align:center; font-size:1.2rem; letter-spacing:4px;">
+            <input type="password" id="passUnlock" placeholder="••••" autocomplete="new-password" style="width:100%; padding:12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; text-align:center; font-size:1.2rem; letter-spacing:4px;">
             <div style="display:flex; gap:10px;">
                 <button onclick="confirmUnlock()" style="background:var(--green); color:white; flex:1; padding:10px; border-radius:6px;">Confirm</button>
                 <button onclick="document.getElementById('modalSenha').style.display='none'" style="background:var(--primary-red); color:white; flex:1; padding:10px; border-radius:6px;">Cancel</button>
             </div>
         </div>
     </div>
-
-
 
     <div id="reportArea" class="report-page">
         <div class="report-header">
@@ -191,10 +158,7 @@
         let currentEventID = '';
         let historyData = [];
 
-
-
-async function checkAccess() {
-            localStorage.clear(); 
+        async function checkAccess() {
             const idInput = document.getElementById('event-id-input');
             const rawId = idInput.value.trim().toUpperCase();
             if(!rawId) return;
@@ -206,55 +170,52 @@ async function checkAccess() {
                 const { data: config } = await _supabase.from('tournament_history')
                     .select('event_name, logo_type')
                     .eq('event_id', targetID)
-                    .order('created_at', { ascending: false })
-                    .limit(1);
+                    .neq('tournament_id', 'IDENTITY_ANCHOR')
+                    .order('created_at', { ascending: false });
                 
-                if(config && config.length > 0) {
-                    document.getElementById('masterEvent').value = config[0].event_name || "";
-                    if(config[0].logo_type) {
-                        document.getElementById('masterLogo').value = config[0].logo_type;
-                    }
+                let finalConfig = config && config.length > 0 ? config[0] : null;
+
+                if(!finalConfig) {
+                    const { data: anchor } = await _supabase.from('tournament_history')
+                        .select('event_name, logo_type')
+                        .eq('event_id', targetID)
+                        .eq('tournament_id', 'IDENTITY_ANCHOR')
+                        .limit(1);
+                    if(anchor && anchor.length > 0) finalConfig = anchor[0];
+                }
+
+                if(finalConfig) {
+                    document.getElementById('masterEvent').value = finalConfig.event_name || "";
+                    document.getElementById('masterLogo').value = finalConfig.logo_type || "REGIONAL";
+                    document.getElementById('outEventName').innerText = finalConfig.event_name || "";
+                    document.getElementById('repEventNameHeader').innerText = finalConfig.event_name || "";
                 }
             };
 
             if (leadRegex.test(rawId)) {
                 currentEventID = rawId;
                 await syncEventConfig(currentEventID);
-
                 document.querySelector('#catalogTable tbody').innerHTML = "";
                 document.getElementById('reportTableBody').innerHTML = "";
-                document.getElementById('login-area').style.display='none';
-                document.getElementById('setupArea').style.display='block';
-                
+                document.getElementById('login-area').style.display = 'none';
+                document.getElementById('setupArea').style.display = 'block';
                 await loadTournaments();
                 await loadHistoryFromCloud();
             } else if (staffRegex.test(rawId)) {
-                const { data } = await _supabase.from('tournament_catalog')
-                    .select('event_id')
-                    .like('event_id', rawId + '%')
-                    .limit(1);
-
+                const { data } = await _supabase.from('tournament_catalog').select('event_id').like('event_id', rawId + '%').limit(1);
                 if(data && data.length > 0) {
                     currentEventID = data[0].event_id;
                     await syncEventConfig(currentEventID);
-
-                    document.getElementById('login-area').style.display='none';
-                    document.getElementById('staffArea').style.display='block';
-                    
+                    document.getElementById('login-area').style.display = 'none';
+                    document.getElementById('staffArea').style.display = 'block';
                     await loadTournaments();
                     await loadHistoryFromCloud();
-                } else {
-                    alert("ACCESS DENIED: Event not found.");
-                }
-            } else {
-                alert("ACCESS DENIED");
-            }
+                } else { alert("ACCESS DENIED: Event not found."); }
+            } else { alert("ACCESS DENIED"); }
             idInput.value = "";
         }
 
-
-
-      async function loadTournaments() {
+        async function loadTournaments() {
             const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
             tournamentCatalog = data || [];
             const select = document.getElementById('staffSelectTourney');
@@ -275,22 +236,8 @@ async function checkAccess() {
             const cost = parseFloat(document.getElementById('tCost').value) || 0;
             if(!name) return alert("Please enter a Tournament Name");
             const uniqueID = "t_" + Date.now();
-            const { error } = await _supabase.from('tournament_catalog').insert([{ 
-                id: uniqueID,
-                event_id: currentEventID, 
-                t_name: name, 
-                t_hour: hour, 
-                t_day: day, 
-                t_fee: fee, 
-                t_cost: cost 
-            }]);
-            if(!error) {
-                document.getElementById('tName').value = "";
-                document.getElementById('tHour').value = "";
-                loadTournaments();
-            } else {
-                alert("Database Error: " + error.message);
-            }
+            const { error } = await _supabase.from('tournament_catalog').insert([{ id: uniqueID, event_id: currentEventID, t_name: name, t_hour: hour, t_day: day, t_fee: fee, t_cost: cost }]);
+            if(!error) { document.getElementById('tName').value = ""; document.getElementById('tHour').value = ""; loadTournaments(); }
         }
 
         async function removeT(id) {
@@ -299,8 +246,6 @@ async function checkAccess() {
                 if(!error) loadTournaments();
             }
         }
-
-
 
         function updateStaffFee() {
             const val = document.getElementById('staffSelectTourney').value;
@@ -314,7 +259,7 @@ async function checkAccess() {
         }
         function round10(val) { return Math.round(val / 10) * 10; }
 
-        function generatePayout() {
+        async function generatePayout() {
             const selectIndex = document.getElementById('staffSelectTourney').value;
             const t = tournamentCatalog[selectIndex];
             if (!t) return alert("Please select a tournament first.");
@@ -337,18 +282,12 @@ async function checkAccess() {
             if (payoutRank >= 32) tiers.push({ name: "17th - 32nd", count: 16 });
 
             let totalW = 0;
-            tiers.forEach((tier, i) => { 
-                tier.weight = Math.pow(factor, (tiers.length - 1) - i); 
-                totalW += (tier.weight * tier.count); 
-            });
+            tiers.forEach((tier, i) => { tier.weight = Math.pow(factor, (tiers.length - 1) - i); totalW += (tier.weight * tier.count); });
             const unit = pool / totalW;
 
-
-
-           let currentTotal = (partIndiv * p);
+            let currentTotal = (partIndiv * p);
             const body = document.getElementById('payoutBody'); 
             body.innerHTML = ""; 
-
             const eventName = document.getElementById('masterEvent').value;
             const logoType = document.getElementById('masterLogo').value;
 
@@ -362,140 +301,62 @@ async function checkAccess() {
             document.getElementById('outEventName').innerText = eventName;
             document.getElementById('outTourneyName').innerText = t.t_name;
             document.getElementById('outLogoImg').src = logoType === "REGIONAL" ? "reg.PNG" : "ic.png";
-            
-            let rounds = p >= 227 ? 9 : p >= 129 ? 8 : p >= 65 ? 7 : p >= 33 ? 6 : p >= 9 ? 4 : 3;
-            document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${rounds}`;
+            document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${p >= 33 ? 6 : 4}`;
             document.getElementById('printArea').style.display = 'block';
             document.getElementById('reportArea').style.display = 'none';
 
-            const newData = { id: t.id, name: t.t_name, schedule: `${t.t_day} - ${t.t_hour}`, players: p, rev: p * t.t_fee, exp: p * t.t_cost, tickets: currentTotal };
-            const existingIndex = historyData.findIndex(h => h.id === t.id);
-            if (existingIndex > -1) historyData[existingIndex] = newData; else historyData.push(newData);
-
-            let payload = {
-                event_id: currentEventID, 
-                tournament_id: t.id, 
-                tournament_name: t.t_name, 
-                schedule: `${t.t_day} - ${t.t_hour}`,
-                players: p, 
-                entry_fee: t.t_fee, 
-                costs: t.t_cost, 
-                total_tickets: currentTotal
-            };
-
+            let payload = { event_id: currentEventID, tournament_id: t.id, tournament_name: t.t_name, schedule: `${t.t_day} - ${t.t_hour}`, players: p, entry_fee: t.t_fee, costs: t.t_cost, total_tickets: currentTotal };
             if (eventName) payload.event_name = eventName;
             if (logoType) payload.logo_type = logoType;
-
-            _supabase.from('tournament_history').upsert(payload, { onConflict: 'event_id, tournament_id' }).then(({ error }) => { 
-                if (error) console.error("Error saving history:", error.message);
-            });
+            await _supabase.from('tournament_history').upsert(payload, { onConflict: 'event_id, tournament_id' });
         }
 
-
-
-     function lockSetup() { 
-            document.getElementById('setupArea').style.display = 'none'; 
-            document.getElementById('staffArea').style.display = 'block'; 
+        function lockSetup() { document.getElementById('setupArea').style.display = 'none'; document.getElementById('staffArea').style.display = 'block'; }
+        function unlockSetup() { document.getElementById('modalSenha').style.display = 'flex'; document.getElementById('passUnlock').value = ""; document.getElementById('passUnlock').focus(); }
+        
+        function confirmUnlock() { 
+            const pass = document.getElementById('passUnlock').value; 
+            if (pass && pass.toUpperCase() === currentEventID.replace('_LEAD', '')) { 
+                document.getElementById('modalSenha').style.display = 'none'; 
+                document.getElementById('setupArea').style.display = 'block'; 
+                document.getElementById('staffArea').style.display = 'none'; 
+            } else { alert("ACCESS DENIED"); }
         }
 
-        function unlockSetup() {
-            document.getElementById('modalSenha').style.display = 'flex';
-            document.getElementById('passUnlock').value = "";
-            document.getElementById('passUnlock').focus();
-        }
-
-        function confirmUnlock() {
-            const pass = document.getElementById('passUnlock').value;
-            const masterPass = currentEventID.replace('_LEAD', '');
-            if (pass && pass.toUpperCase() === masterPass) {
-                document.getElementById('modalSenha').style.display = 'none';
-                document.getElementById('setupArea').style.display = 'block';
-                document.getElementById('staffArea').style.display = 'none';
-            } else {
-                alert("ACCESS DENIED");
-            }
-        }
-
-        function showFinalReport() {
+        async function showFinalReport() {
+            document.getElementById('payoutBody').innerHTML = "";
+            document.getElementById('printArea').style.display = 'none';
+            await loadHistoryFromCloud();
             const eventName = document.getElementById('masterEvent').value || "EVENT NAME NOT SET";
-            const selectedLogo = document.getElementById('masterLogo').value;
-            const logoSrc = selectedLogo === "REGIONAL" ? "reg.PNG" : "ic.png";
-
+            const logoSrc = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
             document.getElementById('repEventNameHeader').innerText = eventName;
             document.getElementById('repLogoImg').src = logoSrc;
 
             const tbody = document.getElementById('reportTableBody');
-            const tfoot = document.getElementById('reportFooter');
-            
-            tbody.innerHTML = ""; 
-            tfoot.innerHTML = "";
-            
-            let totalP = 0, totalRev = 0, totalExp = 0, totalTick = 0;
-            
-            if (historyData.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='6'>NO DATA FOUND FOR THIS EVENT</td></tr>";
-            } else {
-                historyData.forEach(h => {
-                    totalP += h.players; 
-                    totalRev += h.rev; 
-                    totalExp += h.exp; 
-                    totalTick += h.tickets;
-                    tbody.innerHTML += `<tr><td>${h.name}</td><td>${h.schedule}</td><td>${h.players}</td><td>$${h.rev.toFixed(2)}</td><td>$${h.exp.toFixed(2)}</td><td>${h.tickets.toLocaleString()}</td></tr>`;
-                });
-                tfoot.innerHTML = `<tr class="row-total"><td colspan="2">TOTALS</td><td>${totalP}</td><td>$${totalRev.toFixed(2)}</td><td>$${totalExp.toFixed(2)}</td><td>${totalTick.toLocaleString()}</td></tr>`;
-            }
-
-            document.getElementById('payoutBody').innerHTML = "";
-            document.getElementById('outEventName').innerText = "";
-            document.getElementById('outTourneyName').innerText = "";
-            
-            document.getElementById('modalSenha').style.display = 'none'; 
-            document.getElementById('printArea').style.display = 'none';
+            tbody.innerHTML = "";
+            let tP = 0, tR = 0, tE = 0, tT = 0;
+            historyData.forEach(h => {
+                tP += h.players; tR += h.rev; tE += h.exp; tT += h.tickets;
+                tbody.innerHTML += `<tr><td>${h.name}</td><td>${h.schedule}</td><td>${h.players}</td><td>$${h.rev.toFixed(2)}</td><td>$${h.exp.toFixed(2)}</td><td>${h.tickets.toLocaleString()}</td></tr>`;
+            });
+            document.getElementById('reportFooter').innerHTML = `<tr class="row-total"><td colspan="2">TOTALS</td><td>${tP}</td><td>$${tR.toFixed(2)}</td><td>$${tE.toFixed(2)}</td><td>${tT.toLocaleString()}</td></tr>`;
             document.getElementById('reportArea').style.display = 'block';
-            
             window.scrollTo(0, document.body.scrollHeight);
         }
 
-
-
-       async function loadHistoryFromCloud() {
-            const { data, error } = await _supabase.from('tournament_history').select('*').eq('event_id', currentEventID);
-            if (error) {
-                console.error("Error loading history:", error.message);
-                return;
-            }
-            if (data) {
-                historyData = data.map(h => ({ 
-                    id: h.tournament_id, 
-                    name: h.tournament_name, 
-                    schedule: h.schedule, 
-                    players: h.players, 
-                    rev: h.players * h.entry_fee, 
-                    exp: h.players * h.costs, 
-                    tickets: h.total_tickets 
-                }));
-            }
+        async function loadHistoryFromCloud() {
+            const { data } = await _supabase.from('tournament_history').select('*').eq('event_id', currentEventID);
+            if (data) { historyData = data.map(h => ({ id: h.tournament_id, name: h.tournament_name, schedule: h.schedule, players: h.players, rev: h.players * h.entry_fee, exp: h.players * h.costs, tickets: h.total_tickets })); }
         }
 
-        function resetSystem() { 
-            if(confirm("RESET ALL DATA?") && prompt("Type DELETE to confirm") === "DELETE") {
-                localStorage.clear();
-                location.reload(); 
-            }
-        }
+        function resetSystem() { if(confirm("RESET ALL DATA?") && prompt("Type DELETE to confirm") === "DELETE") { localStorage.clear(); location.reload(); } }
 
         async function saveEventIdentity() {
             const eventName = document.getElementById('masterEvent').value;
             const logoType = document.getElementById('masterLogo').value;
             if (!eventName || !currentEventID) return;
-
-            await _supabase.from('tournament_history').upsert({
-                event_id: currentEventID,
-                tournament_id: 'IDENTITY_ANCHOR',
-                event_name: eventName,
-                logo_type: logoType
-            }, { onConflict: 'event_id, tournament_id' });
+            await _supabase.from('tournament_history').upsert({ event_id: currentEventID, tournament_id: 'IDENTITY_ANCHOR', event_name: eventName, logo_type: logoType }, { onConflict: 'event_id, tournament_id' });
         }
-	</script>
+    </script>
 </body>
 </html>
