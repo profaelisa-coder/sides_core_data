@@ -35,10 +35,35 @@
 
 
 
-        @media print { 
-            .no-print, #setupArea, #staffArea, #login-area { display: none !important; } 
-            .payout-page, .report-page { box-shadow: none; margin: 0; width: 100%; } 
-            body { background: white; }
+       @media print { 
+            .no-print, #setupArea, #staffArea, #login-area, #modalSenha { display: none !important; } 
+            .payout-page, .report-page { box-shadow: none; margin: 0; width: 100%; display: block !important; } 
+            body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            table { border: 1px solid #000 !important; width: 100% !important; border-collapse: collapse !important; }
+            th, td { border: 1px solid #ddd !important; text-align: center !important; padding: 8px !important; }
+            .row-total td { border-top: 3px solid #000 !important; background: #f9f9f9 !important; }
+        }
+
+        #modalSenha {
+            display: none; 
+            position: fixed; 
+            z-index: 9999; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.8); 
+            align-items: center; 
+            justify-content: center;
+        }
+
+        .modal-content { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            text-align: center; 
+            width: 300px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
     </style>
 </head>
@@ -82,6 +107,9 @@
         <table class="tourney-list" id="catalogTable"><tbody></tbody></table>
         <button class="btn-lock" onclick="lockSetup()">🔒 LOCK TO STAFF</button>
         <button class="btn-close-event" onclick="showFinalReport()">📊 GENERATE FINAL REPORT</button>
+        
+        <button class="btn-reset" id="btnEmailFuturo" onclick="alert('Email system coming soon in next version!')" style="margin-top: 10px; background: var(--gold); color: #1d3557;">📧 EMAIL FINAL REPORT (Coming Soon)</button>
+        
         <button class="btn-reset" onclick="resetSystem()">⚠️ RESET SYSTEM</button>
     </div>
 
@@ -110,6 +138,20 @@
         </table>
         <div style="text-align:center; margin-top:20px;" class="no-print"><button onclick="window.print()">🖨️ PRINT</button></div>
     </div>
+
+    <div id="modalSenha" class="no-print">
+        <div class="modal-content">
+            <h4 style="color:var(--dark); margin-top:0;">Master Access</h4>
+            <p style="font-size:0.8rem; color:#666;">Enter password to unlock Setup</p>
+            <input type="password" id="passUnlock" placeholder="••••" autocomplete="new-password" 
+                   style="width:100%; padding:12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; text-align:center; font-size:1.2rem; letter-spacing:4px;">
+            <div style="display:flex; gap:10px;">
+                <button onclick="confirmUnlock()" style="background:var(--green); color:white; flex:1; padding:10px; border-radius:6px;">Confirm</button>
+                <button onclick="document.getElementById('modalSenha').style.display='none'" style="background:var(--primary-red); color:white; flex:1; padding:10px; border-radius:6px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
 
 
     <div id="reportArea" class="report-page">
@@ -309,17 +351,24 @@
 
 
 
-        function lockSetup() { 
-            document.getElementById('setupArea').style.display='none'; 
-            document.getElementById('staffArea').style.display='block'; 
+      function lockSetup() { 
+            document.getElementById('setupArea').style.display = 'none'; 
+            document.getElementById('staffArea').style.display = 'block'; 
         }
 
         function unlockSetup() {
-            const pass = prompt("Enter Master Password:");
+            document.getElementById('modalSenha').style.display = 'flex';
+            document.getElementById('passUnlock').value = "";
+            document.getElementById('passUnlock').focus();
+        }
+
+        function confirmUnlock() {
+            const pass = document.getElementById('passUnlock').value;
             const masterPass = currentEventID.replace('_LEAD', '');
             if (pass && pass.toUpperCase() === masterPass) {
-                document.getElementById('setupArea').style.display='block';
-                document.getElementById('staffArea').style.display='none';
+                document.getElementById('modalSenha').style.display = 'none';
+                document.getElementById('setupArea').style.display = 'block';
+                document.getElementById('staffArea').style.display = 'none';
             } else {
                 alert("ACCESS DENIED");
             }
@@ -338,6 +387,7 @@
             tfoot.innerHTML = `<tr class="row-total"><td colspan="2">TOTALS</td><td>${totalP}</td><td>$${totalRev.toFixed(2)}</td><td>$${totalExp.toFixed(2)}</td><td>${totalTick.toLocaleString()}</td></tr>`;
             document.getElementById('repEventNameHeader').innerText = document.getElementById('masterEvent').value;
             document.getElementById('repLogoImg').src = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
+            document.getElementById('modalSenha').style.display = 'none'; 
             document.getElementById('reportArea').style.display = 'block';
             document.getElementById('printArea').style.display = 'none';
         }
