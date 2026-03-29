@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v5.9.1</title>
+    <title>Core Prize Manager v5.9.2</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -34,11 +34,15 @@
         .row-total td { border-top: 3px solid var(--dark); border-bottom: none; background: #f9f9f9; font-size: 1.1rem; padding: 15px 10px; color: var(--dark); }
 
         @media print { 
-            .no-print, #setupArea, #staffArea, #login-area, #modalSenha { display: none !important; } 
+            .no-print, #setupArea, #staffArea, #login-area, #modalSenha, button { display: none !important; } 
+            #reportArea:not([style*="display: none"]) ~ #printArea,
+            #printArea:not([style*="display: none"]) ~ #reportArea {
+                display: none !important;
+            }
             .payout-page, .report-page { 
-                box-shadow: none; 
+                box-shadow: none !important; 
                 margin: 0 auto !important; 
-                width: 180mm !important; 
+                width: 100% !important; 
                 display: block !important; 
             } 
             body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -304,9 +308,13 @@
             } else { alert("ACCESS DENIED"); }
         }
 
-        function showFinalReport() {
+        async function showFinalReport() {
             document.getElementById('payoutBody').innerHTML = "";
+            document.getElementById('outEventName').innerText = "";
+            document.getElementById('outTourneyName').innerText = "";
+            document.getElementById('outDetails').innerText = "";
             document.getElementById('printArea').style.display = 'none';
+            await loadHistoryFromCloud();
             const eventName = document.getElementById('masterEvent').value || "EVENT REPORT";
             const logoSrc = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
             document.getElementById('repEventNameHeader').innerText = eventName;
@@ -314,10 +322,14 @@
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = "";
             let tP = 0, tR = 0, tE = 0, tT = 0;
-            historyData.forEach(h => {
-                tP += h.players; tR += h.rev; tE += h.exp; tT += h.tickets;
-                tbody.innerHTML += `<tr><td>${h.name}</td><td>${h.schedule}</td><td>${h.players}</td><td>$${h.rev.toFixed(2)}</td><td>$${h.exp.toFixed(2)}</td><td>${h.tickets.toLocaleString()}</td></tr>`;
-            });
+            if (historyData.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='6'>NO DATA FOUND</td></tr>";
+            } else {
+                historyData.forEach(h => {
+                    tP += h.players; tR += h.rev; tE += h.exp; tT += h.tickets;
+                    tbody.innerHTML += `<tr><td>${h.name}</td><td>${h.schedule}</td><td>${h.players}</td><td>$${h.rev.toFixed(2)}</td><td>$${h.exp.toFixed(2)}</td><td>${h.tickets.toLocaleString()}</td></tr>`;
+                });
+            }
             document.getElementById('reportFooter').innerHTML = `<tr class="row-total"><td colspan="2">TOTALS</td><td>${tP}</td><td>$${tR.toFixed(2)}</td><td>$${tE.toFixed(2)}</td><td>${tT.toLocaleString()}</td></tr>`;
             document.getElementById('reportArea').style.display = 'block';
             window.scrollTo(0, document.body.scrollHeight);
