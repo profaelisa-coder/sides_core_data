@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v5.9.5</title>
+    <title>Core Prize Manager v5.9.5 - PRO</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -146,9 +146,10 @@
     </div>
 
     <script>
-        const supabaseUrl = 'https://hocpoastnlcwgedvcyqs.supabase.co';
+       const supabaseUrl = 'https://hocpoastnlcwgedvcyqs.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvY3BvYXN0bmxjd2dlZHZjeXFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODU0MTYsImV4cCI6MjA4OTg2MTQxNn0.1MvvcFsnGW4e0Bj7mzoUKs_3bGM-eHDJTOqsvgKe-pI';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        
         let tournamentCatalog = [];
         let currentEventID = '';
         let historyData = [];
@@ -157,15 +158,20 @@
             const idInput = document.getElementById('event-id-input');
             const rawId = idInput.value.trim().toUpperCase();
             if(!rawId) return;
+            
             const leadRegex = /^[A-Z]{3}\d{4}_LEAD$/;
-            const staffRegex = /^[A-Z]{3}\d{2}$/;
+            const staffRegex = /^[A-Z]{3}\d+$/; // Atualizado para aceitar o formato flexível
+
             const syncEventConfig = async (targetID) => {
+                // Puxa as configurações do banco para garantir que o Nome e o Logo voltem ao logar
                 const { data: config } = await _supabase.from('tournament_history').select('event_name, logo_type').eq('event_id', targetID).neq('tournament_id', 'IDENTITY_ANCHOR').order('created_at', { ascending: false });
                 let finalConfig = config && config.length > 0 ? config[0] : null;
+                
                 if(!finalConfig) {
                     const { data: anchor } = await _supabase.from('tournament_history').select('event_name, logo_type').eq('event_id', targetID).eq('tournament_id', 'IDENTITY_ANCHOR').limit(1);
                     if(anchor && anchor.length > 0) finalConfig = anchor[0];
                 }
+                
                 if(finalConfig) {
                     document.getElementById('masterEvent').value = finalConfig.event_name || "";
                     document.getElementById('masterLogo').value = finalConfig.logo_type || "REGIONAL";
@@ -173,6 +179,7 @@
                     document.getElementById('repEventNameHeader').innerText = finalConfig.event_name || "";
                 }
             };
+
             if (leadRegex.test(rawId)) {
                 currentEventID = rawId;
                 await syncEventConfig(currentEventID);
@@ -183,16 +190,24 @@
                 await loadTournaments();
                 await loadHistoryFromCloud();
             } else if (staffRegex.test(rawId)) {
-                const { data } = await _supabase.from('tournament_catalog').select('event_id').like('event_id', rawId + '%').limit(1);
+                // Lógica corrigida do Staff para ignorar números no meio (ex: o "0" do 0226)
+                const prefix = rawId.substring(0, 3);
+                const suffix = rawId.substring(3);
+                const { data } = await _supabase.from('tournament_catalog')
+                    .select('event_id')
+                    .like('event_id', prefix + '%' + suffix + '_LEAD')
+                    .limit(1);
+                
                 if(data && data.length > 0) {
                     currentEventID = data[0].event_id;
-                    await syncEventConfig(currentEventID);
+                    await syncEventConfig(currentEventID); // Garante que o nome do evento apareça pro Staff
                     document.getElementById('login-area').style.display = 'none';
                     document.getElementById('staffArea').style.display = 'block';
                     await loadTournaments();
                     await loadHistoryFromCloud();
                 } else { alert("ACCESS DENIED: Event not found."); }
             } else { alert("ACCESS DENIED"); }
+            
             idInput.value = "";
         }
 
@@ -209,16 +224,33 @@
             });
         }
 
+        async function saveEventIdentity() {
+            const eventName = document.getElementById('masterEvent').value || "EVENTO SEM NOME";
+            const logoType = document.getElementById('masterLogo').value;
+            if (!currentEventID) return;
+            // Cria a "Âncora" definitiva no banco para o nome não sumir
+            await _supabase.from('tournament_history').upsert(
+                { event_id: currentEventID, tournament_id: 'IDENTITY_ANCHOR', event_name: eventName, logo_type: logoType }, 
+                { onConflict: 'event_id, tournament_id' }
+            );
+        }
+
         async function addTournament() {
+            await saveEventIdentity(); // Força salvar o nome do evento sempre que criar um torneio!
             const name = document.getElementById('tName').value.trim();
             const hour = document.getElementById('tHour').value.trim();
             const day = document.getElementById('tDay').value;
             const fee = parseFloat(document.getElementById('tFee').value) || 0;
             const cost = parseFloat(document.getElementById('tCost').value) || 0;
             if(!name) return alert("Please enter a Tournament Name");
+            
             const uniqueID = "t_" + Date.now();
             const { error } = await _supabase.from('tournament_catalog').insert([{ id: uniqueID, event_id: currentEventID, t_name: name, t_hour: hour, t_day: day, t_fee: fee, t_cost: cost }]);
-            if(!error) { document.getElementById('tName').value = ""; document.getElementById('tHour').value = ""; loadTournaments(); }
+            if(!error) { 
+                document.getElementById('tName').value = ""; 
+                document.getElementById('tHour').value = ""; 
+                loadTournaments(); 
+            }
         }
 
         async function removeT(id) {
@@ -244,14 +276,17 @@
             const selectIndex = document.getElementById('staffSelectTourney').value;
             const t = tournamentCatalog[selectIndex];
             if (!t) return alert("Please select a tournament first.");
+            
             const p = parseInt(document.getElementById('staffPlayers').value) || 0;
             const factor = parseFloat(document.getElementById('masterFactor').value) || 2.0;
             const tax = (parseFloat(document.getElementById('masterTax').value) || 0) / 100;
             if (p < 4) return alert("Minimum 4 players required.");
+            
             const totalTicketsLimit = Math.max(0, (t.t_fee - t.t_cost) * p * 10);
             const partIndiv = round10((totalTicketsLimit * tax) / p);
             const pool = totalTicketsLimit - (partIndiv * p);
             const payoutRank = getPayoutRank(p);
+            
             let tiers = [];
             if (payoutRank >= 1) tiers.push({ name: "1st Place", count: 1 });
             if (payoutRank >= 2) tiers.push({ name: "2nd Place", count: 1 });
@@ -259,35 +294,66 @@
             if (payoutRank >= 8) tiers.push({ name: "5th - 8th", count: 4 });
             if (payoutRank >= 16) tiers.push({ name: "9th - 16th", count: 8 });
             if (payoutRank >= 32) tiers.push({ name: "17th - 32nd", count: 16 });
+            
             let totalW = 0;
             tiers.forEach((tier, i) => { tier.weight = Math.pow(factor, (tiers.length - 1) - i); totalW += (tier.weight * tier.count); });
             const unit = pool / totalW;
             let currentTotal = (partIndiv * p);
             const body = document.getElementById('payoutBody'); 
             body.innerHTML = ""; 
-            const eventName = document.getElementById('masterEvent').value;
-            const logoType = document.getElementById('masterLogo').value;
+            
+            const eventName = document.getElementById('masterEvent').value || "EVENTO SEM NOME";
+            const logoType = document.getElementById('masterLogo').value || "REGIONAL";
+            
             tiers.forEach(tier => {
                 let prize = round10(unit * tier.weight) + partIndiv;
                 body.innerHTML += `<tr><td>${tier.name}</td><td>${prize.toLocaleString()}</td></tr>`;
                 currentTotal += (round10(unit * tier.weight) * tier.count);
             });
             body.innerHTML += `<tr style="background:#f9f9f9; font-style:italic"><td>Participation</td><td>${partIndiv.toLocaleString()}</td></tr>`;
+            
             document.getElementById('outEventName').innerText = eventName;
             document.getElementById('outTourneyName').innerText = t.t_name;
             document.getElementById('outLogoImg').src = logoType === "REGIONAL" ? "reg.PNG" : "ic.png";
             document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${p >= 33 ? 6 : 4}`;
             document.getElementById('reportArea').style.display = 'none';
             document.getElementById('printArea').style.display = 'block';
-            let payload = { event_id: currentEventID, tournament_id: t.id, tournament_name: t.t_name, schedule: `${t.t_day} - ${t.t_hour}`, players: p, entry_fee: t.t_fee, costs: t.t_cost, total_tickets: currentTotal };
-            if (eventName) payload.event_name = eventName;
-            if (logoType) payload.logo_type = logoType;
-            await _supabase.from('tournament_history').upsert(payload, { onConflict: 'event_id, tournament_id' });
-            await loadHistoryFromCloud();
+            
+            // PAYLOAD ROBUSTO: Garante que nada vai nulo pro banco
+            let payload = { 
+                event_id: currentEventID, 
+                tournament_id: t.id, 
+                tournament_name: t.t_name, 
+                schedule: `${t.t_day} - ${t.t_hour}`, 
+                players: p, 
+                entry_fee: t.t_fee, 
+                costs: t.t_cost, 
+                total_tickets: currentTotal,
+                event_name: eventName,
+                logo_type: logoType
+            };
+            
+            // O ALERTA DE ERRO: Se falhar, o Staff vai saber na hora
+            const { error } = await _supabase.from('tournament_history').upsert(payload, { onConflict: 'event_id, tournament_id' });
+            if (error) {
+                alert("🚨 ERRO DE CONEXÃO COM O BANCO! Os dados não foram salvos: " + error.message);
+            } else {
+                await loadHistoryFromCloud(); // Atualiza a nuvem silenciosamente se der certo
+            }
         }
 
-        function lockSetup() { document.getElementById('setupArea').style.display = 'none'; document.getElementById('staffArea').style.display = 'block'; }
-        function unlockSetup() { document.getElementById('modalSenha').style.display = 'flex'; document.getElementById('passUnlock').value = ""; document.getElementById('passUnlock').focus(); }
+        async function lockSetup() { 
+            await saveEventIdentity(); // Salva por precaução antes de trancar
+            document.getElementById('setupArea').style.display = 'none'; 
+            document.getElementById('staffArea').style.display = 'block'; 
+        }
+        
+        function unlockSetup() { 
+            document.getElementById('modalSenha').style.display = 'flex'; 
+            document.getElementById('passUnlock').value = ""; 
+            document.getElementById('passUnlock').focus(); 
+        }
+        
         function confirmUnlock() { 
             const pass = document.getElementById('passUnlock').value; 
             if (pass && pass.toUpperCase() === currentEventID.replace('_LEAD', '')) { 
@@ -300,13 +366,16 @@
         async function showFinalReport() {
             document.getElementById('payoutBody').innerHTML = "";
             document.getElementById('printArea').style.display = 'none';
-            await loadHistoryFromCloud();
+            await loadHistoryFromCloud(); // Força a buscar dados novos antes de gerar
+            
             const eventName = document.getElementById('masterEvent').value || "EVENT REPORT";
             const logoSrc = document.getElementById('masterLogo').value === "REGIONAL" ? "reg.PNG" : "ic.png";
+            
             document.getElementById('repEventNameHeader').innerText = eventName;
             document.getElementById('repLogoImg').src = logoSrc;
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = "";
+            
             let tP = 0, tR = 0, tE = 0, tT = 0;
             if (historyData.length === 0) {
                 tbody.innerHTML = "<tr><td colspan='6'>NO DATA FOUND</td></tr>";
@@ -325,12 +394,12 @@
             const { data } = await _supabase.from('tournament_history').select('*').eq('event_id', currentEventID).neq('tournament_id', 'IDENTITY_ANCHOR');
             if (data) { historyData = data.map(h => ({ id: h.tournament_id, name: h.tournament_name, schedule: h.schedule, players: h.players, rev: h.players * h.entry_fee, exp: h.players * h.costs, tickets: h.total_tickets })); }
         }
-        function resetSystem() { if(confirm("RESET ALL DATA?") && prompt("Type DELETE to confirm") === "DELETE") { localStorage.clear(); location.reload(); } }
-        async function saveEventIdentity() {
-            const eventName = document.getElementById('masterEvent').value;
-            const logoType = document.getElementById('masterLogo').value;
-            if (!eventName || !currentEventID) return;
-            await _supabase.from('tournament_history').upsert({ event_id: currentEventID, tournament_id: 'IDENTITY_ANCHOR', event_name: eventName, logo_type: logoType }, { onConflict: 'event_id, tournament_id' });
+        
+        function resetSystem() { 
+            if(confirm("RESET ALL DATA?") && prompt("Type DELETE to confirm") === "DELETE") { 
+                localStorage.clear(); 
+                location.reload(); 
+            } 
         }
     </script>
 </body>
