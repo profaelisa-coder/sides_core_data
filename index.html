@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v5.9.5</title>
+    <title>Core Prize Manager v5.9.7</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -293,12 +293,26 @@
             document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${p >= 33 ? 6 : 4}`;
             document.getElementById('reportArea').style.display = 'none';
             document.getElementById('printArea').style.display = 'block';
-            let payload = { event_id: currentEventID, tournament_id: t.id, tournament_name: t.t_name, schedule: `${t.t_day} - ${t.t_hour}`, players: p, entry_fee: t.t_fee, costs: t.t_cost, total_tickets: currentTotal };
-            if (eventName) payload.event_name = eventName;
-            if (logoType) payload.logo_type = logoType;
-            await _supabase.from('tournament_history').upsert(payload, { onConflict: 'event_id, tournament_id' });
-            await loadHistoryFromCloud();
-        }
+            const payload = { 
+       		 event_id: currentEventID, 
+       		 tournament_id: t.id, 
+     		   event_name: eventName,
+    		    logo_type: logoType,
+    		    tournament_name: t.t_name, 
+    		    schedule: `${t.t_day} - ${t.t_hour}`,
+   		     players: p, 
+   		     entry_fee: t.t_fee, 
+   		     costs: t.t_cost, 
+   		     total_tickets: currentTotal
+   	 };
+
+    const { error } = await _supabase.from('tournament_history').upsert(payload, { onConflict: 'event_id, tournament_id' });
+    
+    if (error) {
+        alert("🚨 ERRO AO SALVAR NO BANCO: " + error.message);
+    } else {
+        await loadHistoryFromCloud();
+    }
 
         function lockSetup() { document.getElementById('setupArea').style.display = 'none'; document.getElementById('staffArea').style.display = 'block'; }
         function unlockSetup() { document.getElementById('modalSenha').style.display = 'flex'; document.getElementById('passUnlock').value = ""; document.getElementById('passUnlock').focus(); }
