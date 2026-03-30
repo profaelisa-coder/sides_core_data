@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v5.9.5 - PRO3</title>
+    <title>Core Prize Manager v5.9.5 - PRO4</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -225,22 +225,22 @@
         }
 
         async function saveEventIdentity() {
-            // Se estiver vazio, injeta "EVENTO PADRAO" e "REGIONAL"
             const eventName = document.getElementById('masterEvent').value || "EVENTO PADRAO";
             const logoType = document.getElementById('masterLogo').value || "REGIONAL";
-            
             if (!currentEventID) return;
             
-            // Cria a "Âncora" no banco para o nome não sumir
-            await _supabase.from('tournament_history').upsert(
-                { 
-                    event_id: currentEventID, 
-                    tournament_id: 'IDENTITY_ANCHOR', 
-                    event_name: eventName, 
-                    logo_type: logoType 
-                }, 
-                { onConflict: 'event_id, tournament_id' }
-            );
+            const payload = { event_id: currentEventID, tournament_id: 'IDENTITY_ANCHOR', event_name: eventName, logo_type: logoType };
+            
+            const { data: existing } = await _supabase.from('tournament_history')
+                .select('id')
+                .eq('event_id', currentEventID)
+                .eq('tournament_id', 'IDENTITY_ANCHOR');
+
+            if (existing && existing.length > 0) {
+                await _supabase.from('tournament_history').update(payload).eq('id', existing[0].id);
+            } else {
+                await _supabase.from('tournament_history').insert([payload]);
+            }
         }
 
         async function addTournament() {
@@ -342,16 +342,34 @@
                 logo_type: logoType
             };
             
-            // 🚀 ENVIO E ALERTA
-            const { error } = await _supabase.from('tournament_history').upsert(payload, { onConflict: 'event_id, tournament_id' });
+           const { data: existing } = await _supabase.from('tournament_history')
+                .select('id')
+                .eq('event_id', currentEventID)
+                .eq('tournament_id', t.id);
+
+            let dbError;
             
-            if (error) {
-                alert("🚨 ERRO DO SUPABASE: " + error.message);
+            if (existing && existing.length > 0) {
+                // 2. Se já existe, ele faz um UPDATE (Atualiza)
+                const { error } = await _supabase.from('tournament_history')
+                    .update(payload)
+                    .eq('id', existing[0].id);
+                dbError = error;
+            } else {
+                // 3. Se não existe, ele faz um INSERT (Insere novo)
+                const { error } = await _supabase.from('tournament_history')
+                    .insert([payload]);
+                dbError = error;
+            }
+
+            // 4. Verificação final
+            if (dbError) {
+                alert("🚨 ERRO DO SUPABASE: " + dbError.message);
             } else {
                 await loadHistoryFromCloud(); 
                 console.log("✅ Dados salvos com sucesso no Supabase!");
             }
-        }
+        } // <--- Fim da função generatePayout
 
         async function lockSetup() { 
             await saveEventIdentity(); // Salva por precaução antes de trancar
