@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v5.9.5 - PRO6</title>
+    <title>Sides Payout System v1.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -242,17 +242,36 @@
             const logoType = document.getElementById('masterLogo').value || "REGIONAL";
             if (!currentEventID) return;
             
-            const payload = { event_id: currentEventID, tournament_id: 'IDENTITY_ANCHOR', event_name: eventName, logo_type: logoType };
+            // 👇 PACOTE BLINDADO: Preenchendo todos os buracos para o Supabase não rejeitar
+            const payload = { 
+                event_id: currentEventID, 
+                tournament_id: 'IDENTITY_ANCHOR', 
+                event_name: eventName, 
+                logo_type: logoType,
+                tournament_name: "ANCHOR", // Nome falso só para preencher
+                schedule: "-",             // Horário falso só para preencher
+                players: 0,
+                entry_fee: 0,
+                costs: 0,
+                total_tickets: 0
+            };
             
-            const { data: existing } = await _supabase.from('tournament_history')
+            const { data: existing, error: selectError } = await _supabase.from('tournament_history')
                 .select('id')
                 .eq('event_id', currentEventID)
                 .eq('tournament_id', 'IDENTITY_ANCHOR');
 
+            if (selectError) {
+                console.error("Erro ao checar âncora:", selectError);
+                return;
+            }
+
             if (existing && existing.length > 0) {
-                await _supabase.from('tournament_history').update(payload).eq('id', existing[0].id);
+                const { error } = await _supabase.from('tournament_history').update(payload).eq('id', existing[0].id);
+                if (error) alert("🚨 ERRO AO ATUALIZAR NOME: " + error.message);
             } else {
-                await _supabase.from('tournament_history').insert([payload]);
+                const { error } = await _supabase.from('tournament_history').insert([payload]);
+                if (error) alert("🚨 ERRO AO SALVAR NOME: " + error.message);
             }
         }
 
