@@ -206,11 +206,10 @@
             } else {
                 alert("ACCESS DENIED");
             }
-	idInput.value = "";
-   }
-        
+            idInput.value = "";
+        } // <--- Fecha o checkAccess de forma limpa
 
-	async function loadTournaments() {
+        async function loadTournaments() {
             const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
             tournamentCatalog = data || [];
             const select = document.getElementById('staffSelectTourney');
