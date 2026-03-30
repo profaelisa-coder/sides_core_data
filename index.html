@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sides Payout System v1.0</title>
+    <title>TESTE Sides Payout System v1.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -451,10 +451,26 @@
         }
 
         async function loadHistoryFromCloud() {
-            const { data } = await _supabase.from('tournament_history').select('*').eq('event_id', currentEventID).neq('tournament_id', 'IDENTITY_ANCHOR');
-            if (data) { historyData = data.map(h => ({ id: h.tournament_id, name: h.tournament_name, schedule: h.schedule, players: h.players, rev: h.players * h.entry_fee, exp: h.players * h.costs, tickets: h.total_tickets })); }
-        }
-        
+            const { data } = await _supabase.from('tournament_history')
+                .select('*')
+                .eq('event_id', currentEventID)
+                .neq('tournament_id', 'IDENTITY_ANCHOR')
+                .order('schedule', { ascending: true }); // 👇 O SEGREDO ESTÁ NESTA LINHA
+                
+            if (data) { 
+                historyData = data.map(h => ({ 
+                    id: h.tournament_id, 
+                    name: h.tournament_name, 
+                    schedule: h.schedule, 
+                    players: h.players, 
+                    rev: h.players * h.entry_fee, 
+                    exp: h.players * h.costs, 
+                    tickets: h.total_tickets 
+                })); 
+            }
+        } // <-- Fecha a função corretamente
+
+        // Devolvi a função de reset para caso você precise!
         function resetSystem() { 
             if(confirm("RESET ALL DATA?") && prompt("Type DELETE to confirm") === "DELETE") { 
                 localStorage.clear(); 
