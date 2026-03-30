@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v5.9.5 - PRO2</title>
+    <title>Core Prize Manager v5.9.5 - PRO3</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -280,7 +280,7 @@
         }
         function round10(val) { return Math.round(val / 10) * 10; }
 
-        async function generatePayout() {
+       async function generatePayout() {
             const selectIndex = document.getElementById('staffSelectTourney').value;
             const t = tournamentCatalog[selectIndex];
             if (!t) return alert("Please select a tournament first.");
@@ -310,7 +310,8 @@
             const body = document.getElementById('payoutBody'); 
             body.innerHTML = ""; 
             
-            const eventName = document.getElementById('masterEvent').value || "EVENTO SEM NOME";
+            // 🛡️ DECLARADO UMA ÚNICA VEZ (Blindagem)
+            const eventName = document.getElementById('masterEvent').value || "EVENTO PADRÃO";
             const logoType = document.getElementById('masterLogo').value || "REGIONAL";
             
             tiers.forEach(tier => {
@@ -327,12 +328,7 @@
             document.getElementById('reportArea').style.display = 'none';
             document.getElementById('printArea').style.display = 'block';
             
-            // PAYLOAD ROBUSTO: Garante que nada vai nulo pro banco
-           // 1. FORÇA BRUTA: Se vier vazio, injeta um valor padrão obrigatório.
-            const eventName = document.getElementById('masterEvent').value || "EVENTO PADRÃO";
-            const logoType = document.getElementById('masterLogo').value || "REGIONAL";
-            
-            // 2. PAYLOAD BLINDADO: Envia todos os campos que o Supabase exige
+            // 📦 PAYLOAD COMPLETO
             let payload = { 
                 event_id: currentEventID, 
                 tournament_id: t.id, 
@@ -342,11 +338,11 @@
                 entry_fee: t.t_fee, 
                 costs: t.t_cost, 
                 total_tickets: currentTotal,
-                event_name: eventName,  // Agora nunca será nulo
-                logo_type: logoType     // Agora nunca será nulo
+                event_name: eventName,
+                logo_type: logoType
             };
             
-            // 3. ENVIO COM ALERTA
+            // 🚀 ENVIO E ALERTA
             const { error } = await _supabase.from('tournament_history').upsert(payload, { onConflict: 'event_id, tournament_id' });
             
             if (error) {
@@ -355,6 +351,7 @@
                 await loadHistoryFromCloud(); 
                 console.log("✅ Dados salvos com sucesso no Supabase!");
             }
+        }
 
         async function lockSetup() { 
             await saveEventIdentity(); // Salva por precaução antes de trancar
