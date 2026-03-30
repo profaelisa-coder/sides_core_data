@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v5.9.7</title>
+    <title>Core Prize Manager v5.9.5</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -180,34 +180,21 @@
                 document.getElementById('reportTableBody').innerHTML = "";
                 document.getElementById('login-area').style.display = 'none';
                 document.getElementById('setupArea').style.display = 'block';
-                
-	        await loadTournaments();
+                await loadTournaments();
                 await loadHistoryFromCloud();
-	   } else if (staffRegex.test(rawId)) {
-                const prefix = rawId.substring(0, 3);
-                const suffix = rawId.substring(3);
-
-                const { data } = await _supabase.from('tournament_catalog')
-                    .select('event_id')
-                    .like('event_id', prefix + '%' + suffix + '_LEAD')
-                    .limit(1);
-
+            } else if (staffRegex.test(rawId)) {
+                const { data } = await _supabase.from('tournament_catalog').select('event_id').like('event_id', rawId + '%').limit(1);
                 if(data && data.length > 0) {
                     currentEventID = data[0].event_id;
                     await syncEventConfig(currentEventID);
-
-                    document.getElementById('login-area').style.display='none';
-                    document.getElementById('staffArea').style.display='block';
-                    await loadTournaments(); 
-            	    await loadHistoryFromCloud()
-                } else {
-                    alert("ACCESS DENIED: Event not found.");
-                }
-            } else {
-                alert("ACCESS DENIED");
-            }
+                    document.getElementById('login-area').style.display = 'none';
+                    document.getElementById('staffArea').style.display = 'block';
+                    await loadTournaments();
+                    await loadHistoryFromCloud();
+                } else { alert("ACCESS DENIED: Event not found."); }
+            } else { alert("ACCESS DENIED"); }
             idInput.value = "";
-        } // <--- Fecha o checkAccess de forma limpa
+        }
 
         async function loadTournaments() {
             const { data } = await _supabase.from('tournament_catalog').select('*').eq('event_id', currentEventID);
@@ -292,26 +279,12 @@
             document.getElementById('outDetails').innerText = `Players: ${p} | Fee: $${t.t_fee} | Rounds: ${p >= 33 ? 6 : 4}`;
             document.getElementById('reportArea').style.display = 'none';
             document.getElementById('printArea').style.display = 'block';
-            const payload = { 
-       		 event_id: currentEventID, 
-       		 tournament_id: t.id, 
-     		   event_name: eventName,
-    		    logo_type: logoType,
-    		    tournament_name: t.t_name, 
-    		    schedule: `${t.t_day} - ${t.t_hour}`,
-   		     players: p, 
-   		     entry_fee: t.t_fee, 
-   		     costs: t.t_cost, 
-   		     total_tickets: currentTotal
-   	 };
-
-    const { error } = await _supabase.from('tournament_history').upsert(payload, { onConflict: 'event_id, tournament_id' });
-    
-    if (error) {
-        alert("🚨 ERRO AO SALVAR NO BANCO: " + error.message);
-    } else {
-        await loadHistoryFromCloud();
-    }
+            let payload = { event_id: currentEventID, tournament_id: t.id, tournament_name: t.t_name, schedule: `${t.t_day} - ${t.t_hour}`, players: p, entry_fee: t.t_fee, costs: t.t_cost, total_tickets: currentTotal };
+            if (eventName) payload.event_name = eventName;
+            if (logoType) payload.logo_type = logoType;
+            await _supabase.from('tournament_history').upsert(payload, { onConflict: 'event_id, tournament_id' });
+            await loadHistoryFromCloud();
+        }
 
         function lockSetup() { document.getElementById('setupArea').style.display = 'none'; document.getElementById('staffArea').style.display = 'block'; }
         function unlockSetup() { document.getElementById('modalSenha').style.display = 'flex'; document.getElementById('passUnlock').value = ""; document.getElementById('passUnlock').focus(); }
