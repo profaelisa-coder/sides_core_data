@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v5.9.5 - PRO</title>
+    <title>Core Prize Manager v5.9.5 - PRO2</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -225,12 +225,20 @@
         }
 
         async function saveEventIdentity() {
-            const eventName = document.getElementById('masterEvent').value || "EVENTO SEM NOME";
-            const logoType = document.getElementById('masterLogo').value;
+            // Se estiver vazio, injeta "EVENTO PADRAO" e "REGIONAL"
+            const eventName = document.getElementById('masterEvent').value || "EVENTO PADRAO";
+            const logoType = document.getElementById('masterLogo').value || "REGIONAL";
+            
             if (!currentEventID) return;
-            // Cria a "Âncora" definitiva no banco para o nome não sumir
+            
+            // Cria a "Âncora" no banco para o nome não sumir
             await _supabase.from('tournament_history').upsert(
-                { event_id: currentEventID, tournament_id: 'IDENTITY_ANCHOR', event_name: eventName, logo_type: logoType }, 
+                { 
+                    event_id: currentEventID, 
+                    tournament_id: 'IDENTITY_ANCHOR', 
+                    event_name: eventName, 
+                    logo_type: logoType 
+                }, 
                 { onConflict: 'event_id, tournament_id' }
             );
         }
@@ -320,6 +328,11 @@
             document.getElementById('printArea').style.display = 'block';
             
             // PAYLOAD ROBUSTO: Garante que nada vai nulo pro banco
+           // 1. FORÇA BRUTA: Se vier vazio, injeta um valor padrão obrigatório.
+            const eventName = document.getElementById('masterEvent').value || "EVENTO PADRÃO";
+            const logoType = document.getElementById('masterLogo').value || "REGIONAL";
+            
+            // 2. PAYLOAD BLINDADO: Envia todos os campos que o Supabase exige
             let payload = { 
                 event_id: currentEventID, 
                 tournament_id: t.id, 
@@ -329,18 +342,19 @@
                 entry_fee: t.t_fee, 
                 costs: t.t_cost, 
                 total_tickets: currentTotal,
-                event_name: eventName,
-                logo_type: logoType
+                event_name: eventName,  // Agora nunca será nulo
+                logo_type: logoType     // Agora nunca será nulo
             };
             
-            // O ALERTA DE ERRO: Se falhar, o Staff vai saber na hora
+            // 3. ENVIO COM ALERTA
             const { error } = await _supabase.from('tournament_history').upsert(payload, { onConflict: 'event_id, tournament_id' });
+            
             if (error) {
-                alert("🚨 ERRO DE CONEXÃO COM O BANCO! Os dados não foram salvos: " + error.message);
+                alert("🚨 ERRO DO SUPABASE: " + error.message);
             } else {
-                await loadHistoryFromCloud(); // Atualiza a nuvem silenciosamente se der certo
+                await loadHistoryFromCloud(); 
+                console.log("✅ Dados salvos com sucesso no Supabase!");
             }
-        }
 
         async function lockSetup() { 
             await saveEventIdentity(); // Salva por precaução antes de trancar
