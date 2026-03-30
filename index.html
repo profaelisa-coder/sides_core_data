@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Core Prize Manager v5.9.5 - PRO4</title>
+    <title>Core Prize Manager v5.9.5 - PRO5</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary-red: #e63946; --dark: #1d3557; --gold: #ffb703; --green: #2a9d8f; }
@@ -154,25 +154,39 @@
         let currentEventID = '';
         let historyData = [];
 
-        async function checkAccess() {
+      async function checkAccess() {
             const idInput = document.getElementById('event-id-input');
             const rawId = idInput.value.trim().toUpperCase();
             if(!rawId) return;
             
             const leadRegex = /^[A-Z]{3}\d{4}_LEAD$/;
-            const staffRegex = /^[A-Z]{3}\d+$/; // Atualizado para aceitar o formato flexível
+            const staffRegex = /^[A-Z]{3}\d+$/; 
 
+            // --- A NOVA LÓGICA: Busca a Âncora Primeiro! ---
             const syncEventConfig = async (targetID) => {
-                // Puxa as configurações do banco para garantir que o Nome e o Logo voltem ao logar
-                const { data: config } = await _supabase.from('tournament_history').select('event_name, logo_type').eq('event_id', targetID).neq('tournament_id', 'IDENTITY_ANCHOR').order('created_at', { ascending: false });
-                let finalConfig = config && config.length > 0 ? config[0] : null;
-                
-                if(!finalConfig) {
-                    const { data: anchor } = await _supabase.from('tournament_history').select('event_name, logo_type').eq('event_id', targetID).eq('tournament_id', 'IDENTITY_ANCHOR').limit(1);
-                    if(anchor && anchor.length > 0) finalConfig = anchor[0];
+                const { data: anchor } = await _supabase.from('tournament_history')
+                    .select('event_name, logo_type')
+                    .eq('event_id', targetID)
+                    .eq('tournament_id', 'IDENTITY_ANCHOR')
+                    .limit(1);
+
+                let finalConfig = null;
+
+                // Se achou a âncora e ela tem nome, é ela que manda!
+                if (anchor && anchor.length > 0 && anchor[0].event_name) {
+                    finalConfig = anchor[0]; 
+                } else {
+                    // Plano B (só pro caso de erro): pega do último torneio
+                    const { data: config } = await _supabase.from('tournament_history')
+                        .select('event_name, logo_type')
+                        .eq('event_id', targetID)
+                        .neq('tournament_id', 'IDENTITY_ANCHOR')
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+                    if (config && config.length > 0) finalConfig = config[0];
                 }
-                
-                if(finalConfig) {
+
+                if (finalConfig) {
                     document.getElementById('masterEvent').value = finalConfig.event_name || "";
                     document.getElementById('masterLogo').value = finalConfig.logo_type || "REGIONAL";
                     document.getElementById('outEventName').innerText = finalConfig.event_name || "";
@@ -180,7 +194,7 @@
                 }
             };
 
-            if (leadRegex.test(rawId)) {
+          if (leadRegex.test(rawId)) {
                 currentEventID = rawId;
                 await syncEventConfig(currentEventID);
                 document.querySelector('#catalogTable tbody').innerHTML = "";
@@ -190,7 +204,6 @@
                 await loadTournaments();
                 await loadHistoryFromCloud();
             } else if (staffRegex.test(rawId)) {
-                // Lógica corrigida do Staff para ignorar números no meio (ex: o "0" do 0226)
                 const prefix = rawId.substring(0, 3);
                 const suffix = rawId.substring(3);
                 const { data } = await _supabase.from('tournament_catalog')
@@ -200,7 +213,7 @@
                 
                 if(data && data.length > 0) {
                     currentEventID = data[0].event_id;
-                    await syncEventConfig(currentEventID); // Garante que o nome do evento apareça pro Staff
+                    await syncEventConfig(currentEventID);
                     document.getElementById('login-area').style.display = 'none';
                     document.getElementById('staffArea').style.display = 'block';
                     await loadTournaments();
