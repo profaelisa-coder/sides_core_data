@@ -323,7 +323,6 @@
             const body = document.getElementById('payoutBody'); 
             body.innerHTML = ""; 
             
-            // 🛡️ DECLARADO UMA ÚNICA VEZ (Blindagem)
             const eventName = document.getElementById('masterEvent').value || "EVENTO PADRÃO";
             const logoType = document.getElementById('masterLogo').value || "REGIONAL";
             
@@ -341,7 +340,6 @@
             document.getElementById('reportArea').style.display = 'none';
             document.getElementById('printArea').style.display = 'block';
             
-            // 📦 PAYLOAD COMPLETO DO TORNEIO
             let payload = { 
                 event_id: currentEventID, 
                 tournament_id: t.id, 
@@ -355,7 +353,7 @@
                 logo_type: logoType
             };
             
-            // 1. Pergunta ao banco se esse torneio já existe para esse evento
+            
             const { data: existing } = await _supabase.from('tournament_history')
                 .select('id')
                 .eq('event_id', currentEventID)
@@ -364,26 +362,23 @@
             let dbError;
             
             if (existing && existing.length > 0) {
-                // 2. Se já existe, ele faz um UPDATE (Atualiza)
                 const { error } = await _supabase.from('tournament_history')
                     .update(payload)
                     .eq('id', existing[0].id);
                 dbError = error;
             } else {
-                // 3. Se não existe, ele faz um INSERT (Insere novo)
                 const { error } = await _supabase.from('tournament_history')
                     .insert([payload]);
                 dbError = error;
             }
 
-            // 4. Verificação final
             if (dbError) {
                 alert("🚨 ERRO DO SUPABASE: " + dbError.message);
             } else {
                 await loadHistoryFromCloud(); 
                 console.log("✅ Dados salvos com sucesso no Supabase!");
             }
-        } // <--- Fim da função generatePayout
+        }
 
         async function lockSetup() { 
             await saveEventIdentity(); // Salva por precaução antes de trancar
